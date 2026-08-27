@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1787705455986,
-      "tag": "0000_fluffy_gargoyle",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1787787419148,
-      "tag": "0001_wakeful_ben_parker",
+      "when": 1787870590849,
+      "tag": "0000_mighty_ikaris",
       "breakpoints": true
     }
   ]

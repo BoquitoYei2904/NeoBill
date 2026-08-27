@@ -30,10 +30,10 @@ function getJwks() {
 }
 
 /**
- * Verifies the `Authorization: Bearer <token>` header against Supabase's
- * public signing keys (JWKS). Supabase Auth signs tokens asymmetrically
- * (ES256), so verification only needs the public key — no shared secret
- * to manage or leak.
+  Verifies the `Authorization: Bearer <token>` header against Supabase's
+  public signing keys (JWKS). Supabase Auth signs tokens asymmetrically
+  (ES256), so verification only needs the public key — no shared secret
+  to manage or leak.
  */
 export const requireAuth = createMiddleware<AuthEnv>(async (c, next) => {
   const header = c.req.header("Authorization");

@@ -1,29 +1,28 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { clients } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
+import { logAudit } from "../lib/auditLog.js";
+import { withDbErrorHandling } from "../lib/dbErrors.js";
 import {
   ClientSchema,
   CreateClientSchema,
   UpdateClientSchema,
   IdParamSchema,
-} from "../schemas/clientSchema.js";
-
-
+} from "../schemas/clientsSchema.js";
 
 export const clientsRoute = new OpenAPIHono<{ Variables: { userId: string } }>();
 
-// All routes below require a valid Supabase auth token.
 clientsRoute.use("*", requireAuth);
 
-// GET /clients — only this user's clients
+// GET /clients
 clientsRoute.openapi(
   createRoute({
     method: "get",
     path: "/",
     tags: ["Clients"],
-    summary: "List your clients",
+    summary: "List clients",
     security: [{ bearerAuth: [] }],
     responses: {
       200: {
@@ -34,12 +33,7 @@ clientsRoute.openapi(
     },
   }),
   async (c) => {
-    const userId = c.get("userId");
-    const result = await db
-      .select()
-      .from(clients)
-      .where(eq(clients.userId, userId))
-      .orderBy(clients.id);
+    const result = await db.select().from(clients).orderBy(clients.id);
     return c.json(result);
   }
 );
@@ -61,16 +55,31 @@ clientsRoute.openapi(
         content: { "application/json": { schema: ClientSchema } },
       },
       401: { description: "Missing or invalid auth token" },
+      409: { description: "Referenced type does not exist" },
     },
   }),
   async (c) => {
     const userId = c.get("userId");
     const body = c.req.valid("json");
-    const [created] = await db
-      .insert(clients)
-      .values({ ...body, userId })
-      .returning();
-    return c.json(created, 201);
+
+    const result = await withDbErrorHandling(c, () =>
+      db.transaction(async (tx) => {
+        const [created] = await tx
+          .insert(clients)
+          .values({ ...body, createdBy: userId })
+          .returning();
+        await logAudit(tx, {
+          tableName: "clients",
+          recordId: created.id,
+          action: "insert",
+          oldData: null,
+          userId,
+        });
+        return created;
+      })
+    );
+    if (result instanceof Response) return result;
+    return c.json(result, 201);
   }
 );
 
@@ -80,7 +89,7 @@ clientsRoute.openapi(
     method: "patch",
     path: "/{id}",
     tags: ["Clients"],
-    summary: "Update a client",
+    summary: "Update a client (including deactivating via status: false)",
     security: [{ bearerAuth: [] }],
     request: {
       params: IdParamSchema,
@@ -93,19 +102,37 @@ clientsRoute.openapi(
       },
       404: { description: "Client not found" },
       401: { description: "Missing or invalid auth token" },
+      409: { description: "Referenced type does not exist" },
     },
   }),
   async (c) => {
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
-    const [updated] = await db
-      .update(clients)
-      .set(body)
-      .where(and(eq(clients.id, id), eq(clients.userId, userId)))
-      .returning();
-    if (!updated) return c.json({ message: "Client not found" }, 404);
-    return c.json(updated, 200);
+
+    const result = await withDbErrorHandling(c, () =>
+      db.transaction(async (tx) => {
+        const [before] = await tx.select().from(clients).where(eq(clients.id, id));
+        if (!before) return null;
+
+        const [updated] = await tx
+          .update(clients)
+          .set(body)
+          .where(eq(clients.id, id))
+          .returning();
+        await logAudit(tx, {
+          tableName: "clients",
+          recordId: id,
+          action: "update",
+          oldData: before,
+          userId,
+        });
+        return updated;
+      })
+    );
+    if (result instanceof Response) return result;
+    if (!result) return c.json({ message: "Client not found" }, 404);
+    return c.json(result, 200);
   }
 );
 
@@ -115,23 +142,38 @@ clientsRoute.openapi(
     method: "delete",
     path: "/{id}",
     tags: ["Clients"],
-    summary: "Delete a client",
+    summary: "Delete a client (blocked if licitations or payments reference it — deactivate instead)",
     security: [{ bearerAuth: [] }],
     request: { params: IdParamSchema },
     responses: {
       204: { description: "Deleted" },
       404: { description: "Client not found" },
       401: { description: "Missing or invalid auth token" },
+      409: { description: "Client is still referenced by other records" },
     },
   }),
   async (c) => {
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
-    const [deleted] = await db
-      .delete(clients)
-      .where(and(eq(clients.id, id), eq(clients.userId, userId)))
-      .returning();
-    if (!deleted) return c.json({ message: "Client not found" }, 404);
+
+    const result = await withDbErrorHandling(c, () =>
+      db.transaction(async (tx) => {
+        const [before] = await tx.select().from(clients).where(eq(clients.id, id));
+        if (!before) return null;
+
+        await tx.delete(clients).where(eq(clients.id, id));
+        await logAudit(tx, {
+          tableName: "clients",
+          recordId: id,
+          action: "delete",
+          oldData: before,
+          userId,
+        });
+        return before;
+      })
+    );
+    if (result instanceof Response) return result;
+    if (!result) return c.json({ message: "Client not found" }, 404);
     return c.body(null, 204);
   }
 );

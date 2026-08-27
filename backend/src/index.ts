@@ -4,6 +4,10 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
 import { clientsRoute } from "./routes/clients.js";
+import { configsRoute } from "./routes/configs.js";
+import { productsRoute } from "./routes/products.js";
+import { licitationsRoute } from "./routes/licitations.js";
+import { historyRoute } from "./routes/history.js";
 
 const app = new OpenAPIHono();
 
@@ -18,13 +22,17 @@ app.use(
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.route("/clients", clientsRoute);
+app.route("/configs", configsRoute);
+app.route("/products", productsRoute);
+app.route("/licitations", licitationsRoute);
+app.route("/history", historyRoute);
 
 // OpenAPI JSON spec
 app.doc("/openapi.json", {
   openapi: "3.0.0",
   info: {
-    title: "TEST API",
-    version: "1.0.0",
+    title: "NeoBill API",
+    version: "1.1.0",
     description:
       "Project with Hono.js + Postgres API with Supabase Auth.",
   },
