@@ -23,6 +23,7 @@ export const LicitationSchema = z
     isDocumentGenerated: z.boolean().openapi({ example: false }),
     notes: z.string().nullable().openapi({ example: "Follow up next week" }),
     clientId: z.number().openapi({ example: 3 }),
+    reference: z.string().openapi({ example: "LIC-2023-001" }),
     createdBy: z.string().openapi({ example: "11111111-1111-1111-1111-111111111111" }),
     createdAt: z.string().openapi({ example: "2026-08-25T10:00:00.000Z" }),
   })
@@ -30,6 +31,7 @@ export const LicitationSchema = z
 
 export const CreateLicitationSchema = z
   .object({
+    reference: z.string().openapi({ example: "LIC-2023-001" }),
     date: z.string().datetime().openapi({ example: "2026-08-25T10:00:00.000Z" }),
     limit_date: z.string().datetime().openapi({ example: "2026-09-10T23:59:59.000Z" }),
     clientId: z.number().int().positive().openapi({ example: 3 }),
@@ -46,6 +48,7 @@ export const UpdateLicitationSchema = z
     status: z.enum(LICITATION_STATUSES).optional().openapi({ example: "activa" }),
     document: z.string().optional(),
     isDocumentGenerated: z.boolean().optional(),
+    reference: z.string().optional(),
     notes: z.string().optional(),
   })
   .openapi("UpdateLicitation");

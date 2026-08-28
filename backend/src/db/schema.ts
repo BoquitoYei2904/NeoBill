@@ -41,6 +41,7 @@ export const licitationStatusEnum = pgEnum("licitation_status", ["borrador", "ac
 
 export const licitations = pgTable("licitations", {
   id: serial("id").primaryKey(),
+  reference: text("reference").notNull(),
   date: timestamp("date", { withTimezone: true }).notNull(),
   limit_date: timestamp("limit_date", { withTimezone: true }).notNull(),
 

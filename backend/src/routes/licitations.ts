@@ -97,10 +97,11 @@ licitationsRoute.openapi(
         const [created] = await tx
           .insert(licitations)
           .values({
+            reference: body.reference,
             date: new Date(body.date),
             limit_date: new Date(body.limit_date),
             clientId: body.clientId,
-            notes: body.notes,
+              
             document: body.document,
             base: "0.00",
             discount: "0.00",
@@ -159,6 +160,7 @@ licitationsRoute.openapi(
           .update(licitations)
           .set({
             ...(body.date !== undefined && { date: new Date(body.date) }),
+            ...(body.reference !== undefined && { reference: body.reference }),
             ...(body.limit_date !== undefined && { limit_date: new Date(body.limit_date) }),
             ...(body.clientId !== undefined && { clientId: body.clientId }),
             ...(body.status !== undefined && { status: body.status }),
