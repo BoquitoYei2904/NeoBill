@@ -1,0 +1,1 @@
+ALTER TABLE "licitations" ADD COLUMN "reference" text NOT NULL;
