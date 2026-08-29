@@ -4,8 +4,9 @@ export const AuditLogEntrySchema = z
   .object({
     id: z.number().openapi({ example: 1 }),
     tableName: z.string().openapi({ example: "clients" }),
-    recordId: z.number().openapi({ example: 5 }),
+    recordId: z.number().nullable().openapi({ example: 5 }),
     action: z.string().openapi({ example: "update" }),
+    recordUuid: z.string().uuid().nullable().openapi({example: "11111111-1111-1111-1111-111111111111",}),
     oldData: z
       .any()
       .nullable()
