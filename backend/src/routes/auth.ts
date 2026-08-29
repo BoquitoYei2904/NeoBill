@@ -9,7 +9,7 @@ import {
   MeSchema,
   AccessRequestSchema,
   IdParamSchema,
-} from "../schemas/authSchema";
+} from "../schemas/authSchema.js";
 
 export const authRoute = new OpenAPIHono<{
   Variables: { userId: string; userRole?: "admin" | "user" };

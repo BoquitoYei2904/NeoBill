@@ -10,7 +10,7 @@ import {
   CreateUserSchema,
   UpdateUserSchema,
   IdParamSchema,
-} from "../schemas/usersSchema";
+} from "../schemas/usersSchema.js";
 
 export const usersRoute = new OpenAPIHono<{
   Variables: { userId: string; userRole: "admin" | "user" };
