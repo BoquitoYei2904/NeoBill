@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { taxes, discounts, typesClient } from "../db/schema.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAdmin, requireApproved } from "../middleware/auth.js";
 import { logAudit } from "../lib/auditLog.js";
 import { withDbErrorHandling } from "../lib/dbErrors.js";
 import {
@@ -18,9 +18,11 @@ import {
   IdParamSchema,
 } from "../schemas/configsSchema.js";
 
-export const configsRoute = new OpenAPIHono<{ Variables: { userId: string } }>();
+export const configsRoute = new OpenAPIHono<{
+  Variables: { userId: string; userRole: "admin" | "user" }
+}>();
 
-configsRoute.use("*", requireAuth);
+configsRoute.use("*", requireApproved, requireAdmin); //locked to admins only
 
 // GET /taxes
 configsRoute.openapi(
@@ -61,7 +63,7 @@ configsRoute.openapi(
     const created = await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(taxes)
-        .values({ name: body.name, percentage: String(body.percentage), createdBy: userId })
+        .values({ name: body.name, percentage: String(body.percentage), status: body.status, createdBy: userId })
         .returning();
       await logAudit(tx, {
         tableName: "taxes",
@@ -107,6 +109,7 @@ configsRoute.openapi(
         .set({
           ...(body.name !== undefined && { name: body.name }),
           ...(body.percentage !== undefined && { percentage: String(body.percentage) }),
+          ...(body.status !== undefined && { status: body.status }),
         })
         .where(eq(taxes.id, id))
         .returning();
@@ -204,7 +207,7 @@ configsRoute.openapi(
     const created = await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(discounts)
-        .values({ name: body.name, percentage: String(body.percentage), createdBy: userId })
+        .values({ name: body.name, percentage: String(body.percentage), status: body.status, createdBy: userId })
         .returning();
       await logAudit(tx, {
         tableName: "discounts",
@@ -251,6 +254,7 @@ configsRoute.openapi(
         .set({
           ...(body.name !== undefined && { name: body.name }),
           ...(body.percentage !== undefined && { percentage: String(body.percentage) }),
+          ...(body.status !== undefined && { status: body.status }),
         })
         .where(eq(discounts.id, id))
         .returning();
@@ -350,7 +354,7 @@ configsRoute.openapi(
     const created = await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(typesClient)
-        .values({ name: body.name, createdBy: userId })
+        .values({ name: body.name, status: body.status, createdBy: userId })
         .returning();
       await logAudit(tx, {
         tableName: "types_client",
@@ -365,7 +369,7 @@ configsRoute.openapi(
   }
 );
 
-// PUT /client-types/:id
+// PATCH /client-types/:id
 configsRoute.openapi(
   createRoute({
     method: "patch",

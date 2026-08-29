@@ -9,19 +9,18 @@ type Action = "insert" | "update" | "delete";
  * audit entry and the change it describes always succeed or fail together.
  */
 export async function logAudit(
-  
   tx: PgTransaction<any, any, any>,
   params: {
     tableName: string;
-    recordId: number;
     action: Action;
     oldData: unknown;
     userId: string;
-  }
+  } & ({ recordId: number; recordUuid?: never } | { recordUuid: string; recordId?: never })
 ) {
   await tx.insert(auditLog).values({
     tableName: params.tableName,
-    recordId: params.recordId,
+    recordId: params.recordId ?? null,
+    recordUuid: params.recordUuid ?? null,
     action: params.action,
     oldData: params.oldData as object | null,
     modifiedBy: params.userId,

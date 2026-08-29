@@ -3,11 +3,13 @@ import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
-import { clientsRoute } from "./routes/clients.js";
-import { configsRoute } from "./routes/configs.js";
-import { productsRoute } from "./routes/products.js";
-import { licitationsRoute } from "./routes/licitations.js";
-import { historyRoute } from "./routes/history.js";
+import { clientsRoute } from "./routes/clients";
+import { configsRoute } from "./routes/configs";
+import { productsRoute } from "./routes/products";
+import { licitationsRoute } from "./routes/licitations";
+import { historyRoute } from "./routes/history";
+import { authRoute } from "./routes/auth.js";
+import { usersRoute } from "./routes/users";
 
 const app = new OpenAPIHono();
 
@@ -26,6 +28,9 @@ app.route("/configs", configsRoute);
 app.route("/products", productsRoute);
 app.route("/licitations", licitationsRoute);
 app.route("/history", historyRoute);
+app.route("/auth", authRoute);
+app.route("/users", usersRoute);
+
 
 // OpenAPI JSON spec
 app.doc("/openapi.json", {

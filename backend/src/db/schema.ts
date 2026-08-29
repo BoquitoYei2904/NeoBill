@@ -6,12 +6,16 @@ export const authUsers = authSchema.table("users", {
 });
 
 export const roles = pgEnum("roles", ["admin", "user"]);
+export const profileStatus = pgEnum("profile_status", ["pending", "approved", "rejected"]);
+
 
 // --- Tables ---
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey().references(() => authUsers.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
   name: text("name").notNull(),
   roles: roles("roles").notNull().default("user"),
+  status: profileStatus("status").notNull().default("pending"),
   age: integer("age"),
   address: text("address"),
   phone: text("phone"),
@@ -124,6 +128,7 @@ export const taxes = pgTable("taxes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull(),
+  status: boolean("status").notNull().default(true),
   createdBy: uuid("created_by")
   .notNull()
   .references(() => authUsers.id, { onDelete: "restrict" }),
@@ -134,6 +139,7 @@ export const discounts = pgTable("discounts", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull(),
+  status: boolean("status").notNull().default(true),
   createdBy: uuid("created_by")
   .notNull()
   .references(() => authUsers.id, { onDelete: "restrict" }),
@@ -143,6 +149,7 @@ export const discounts = pgTable("discounts", {
 export const typesClient = pgTable("types_client", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  status: boolean("status").notNull().default(true),
   createdBy: uuid("created_by")
   .notNull()
   .references(() => authUsers.id, { onDelete: "restrict" }),

@@ -4,6 +4,7 @@ export const TaxSchema = z
   .object({
     id: z.number().openapi({ example: 1 }),
     name: z.string().openapi({ example: "IVA" }),
+    status: z.boolean().openapi({ example: true }),    
     percentage: z.string().openapi({ example: "12.00" }), // numeric columns come back as strings
     createdBy: z.string().openapi({ example: "11111111-1111-1111-1111-111111111111" }),
     createdAt: z.string().openapi({ example: "2026-08-25T10:00:00.000Z" }),
@@ -13,6 +14,7 @@ export const TaxSchema = z
 export const CreateTaxSchema = z
   .object({
     name: z.string().min(1).openapi({ example: "IVA" }),
+    status: z.boolean().openapi({ example: true }),
     percentage: z.coerce
       .number()
       .min(0)
@@ -27,6 +29,7 @@ export const DiscountSchema = z
   .object({
     id: z.number().openapi({ example: 1 }),
     name: z.string().openapi({ example: "Loyalty discount" }),
+    status: z.boolean().openapi({ example: true }),
     percentage: z.string().openapi({ example: "5.00" }),
     createdBy: z.string().openapi({ example: "11111111-1111-1111-1111-111111111111" }),
     createdAt: z.string().openapi({ example: "2026-08-25T10:00:00.000Z" }),
@@ -36,6 +39,7 @@ export const DiscountSchema = z
 export const CreateDiscountSchema = z
   .object({
     name: z.string().min(1).openapi({ example: "Loyalty discount" }),
+    status: z.boolean().openapi({ example: true }),
     percentage: z.coerce
       .number()
       .min(0)
@@ -50,6 +54,7 @@ export const ClientTypeSchema = z
   .object({
     id: z.number().openapi({ example: 1 }),
     name: z.string().openapi({ example: "Government" }),
+    status: z.boolean().openapi({ example: true }),
     createdBy: z.string().openapi({ example: "11111111-1111-1111-1111-111111111111" }),
     createdAt: z.string().openapi({ example: "2026-08-25T10:00:00.000Z" }),
   })
@@ -58,6 +63,7 @@ export const ClientTypeSchema = z
 export const CreateClientTypeSchema = z
   .object({
     name: z.string().min(1).openapi({ example: "Government" }),
+    status: z.boolean().openapi({ example: true }),
   })
   .openapi("CreateClientType");
 
