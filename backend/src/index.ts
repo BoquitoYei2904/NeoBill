@@ -3,13 +3,13 @@ import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
-import { clientsRoute } from "./routes/clients";
-import { configsRoute } from "./routes/configs";
-import { productsRoute } from "./routes/products";
-import { licitationsRoute } from "./routes/licitations";
-import { historyRoute } from "./routes/history";
+import { clientsRoute } from "./routes/clients.js";
+import { configsRoute } from "./routes/configs.js";
+import { productsRoute } from "./routes/products.js";
+import { licitationsRoute } from "./routes/licitations.js";
+import { historyRoute } from "./routes/history.js";
 import { authRoute } from "./routes/auth.js";
-import { usersRoute } from "./routes/users";
+import { usersRoute } from "./routes/users.js";
 
 const app = new OpenAPIHono();
 
