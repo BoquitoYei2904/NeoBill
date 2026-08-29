@@ -19,7 +19,7 @@ export async function logAudit(
 ) {
   await tx.insert(auditLog).values({
     tableName: params.tableName,
-    recordId: params.recordId ?? null,
+    recordId: params.recordId,
     recordUuid: params.recordUuid ?? null,
     action: params.action,
     oldData: params.oldData as object | null,

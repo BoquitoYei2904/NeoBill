@@ -159,7 +159,8 @@ export const typesClient = pgTable("types_client", {
 export const auditLog = pgTable("audit_log", {
   id: serial("id").primaryKey(),
   tableName: text("table_name").notNull(),      
-  recordId: integer("record_id").notNull(),     
+  recordId: integer("record_id"),
+  recordUuid: uuid("record_uuid"),  
   action: text("action").notNull(),                  // Diferent rules for different tables
   oldData: jsonb("old_data"), //snapshot of old data before the action.                       
   modifiedBy: uuid("modified_by")
