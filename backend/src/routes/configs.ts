@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { taxes, discounts, typesClient } from "../db/schema.js";
-import { requireAdmin, requireApproved } from "../middleware/auth.js";
+import { requireAdminForWrites, requireApproved } from "../middleware/auth.js";
 import { logAudit } from "../lib/auditLog.js";
 import { withDbErrorHandling } from "../lib/dbErrors.js";
 import {
@@ -22,7 +22,7 @@ export const configsRoute = new OpenAPIHono<{
   Variables: { userId: string; userRole: "admin" | "user" }
 }>();
 
-configsRoute.use("*", requireApproved, requireAdmin); //locked to admins only
+configsRoute.use("*", requireApproved, requireAdminForWrites); //writing locked to admins only
 
 // GET /taxes
 configsRoute.openapi(

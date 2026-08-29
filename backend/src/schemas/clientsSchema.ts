@@ -16,6 +16,16 @@ export const ClientSchema = z
   })
   .openapi("Client");
 
+export const ClientListSchema = z
+  .object({
+    id: z.number().openapi({ example: 1 }),
+    name: z.string().openapi({ example: "Jane Cooper" }),
+    email: z.string().nullable().openapi({ example: "jane@acme.com" }),
+    type: z.string().openapi({ example: "Tipo" }),
+    status: z.boolean().openapi({ example: true }),
+  })
+  .openapi("ClientList");
+
 export const CreateClientSchema = z
   .object({
     typeId: z.number().int().positive().openapi({ example: 2 }),

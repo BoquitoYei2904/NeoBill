@@ -25,6 +25,7 @@ export const CreateProductSchema = z
     notes: z.string().optional().openapi({ example: "Bulk discount available" }),
     tags: z.array(z.string()).optional().openapi({ example: ["electronics", "accessory"] }),
     taxId: z.number().int().positive().openapi({ example: 1 }),
+    status: z.boolean().openapi({ example: true }),
   })
   .openapi("CreateProduct");
 

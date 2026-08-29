@@ -1,5 +1,5 @@
 import { supabase } from "./supabaseClient";
-import { type Client, type NewClient } from "./models/models";
+import { type Client, type NewClient } from "../type/clients";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 

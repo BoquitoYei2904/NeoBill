@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { clients } from "../db/schema.js";
+import { typesClient } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logAudit } from "../lib/auditLog.js";
 import { withDbErrorHandling } from "../lib/dbErrors.js";
@@ -10,6 +11,7 @@ import {
   CreateClientSchema,
   UpdateClientSchema,
   IdParamSchema,
+  ClientListSchema,
 } from "../schemas/clientsSchema.js";
 
 export const clientsRoute = new OpenAPIHono<{ Variables: { userId: string } }>();
@@ -35,6 +37,36 @@ clientsRoute.openapi(
   async (c) => {
     const result = await db.select().from(clients).orderBy(clients.id);
     return c.json(result);
+  }
+);
+
+// GET /clientList
+clientsRoute.openapi(
+  createRoute({
+    method: "get",
+    path: "/clientList",
+    tags: ["Clients"],
+    summary: "Sumaried list clients",
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: "List of clients",
+        content: { "application/json": { schema: z.array(ClientListSchema) } },
+      },
+      401: { description: "Missing or invalid auth token" },
+    },
+  }),
+  async (c) => {
+    const clientsResult = await db.select().from(clients).orderBy(clients.id);
+    const clientTypesResult = await db.select().from(typesClient).orderBy(typesClient.id);
+    const clientList = clientsResult.map((client) => ({
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      type: clientTypesResult.find((item) => item.id === Number(client.typeId))?.name || "Unknown",
+      status: client.status ? "Activo" : "Inactivo",
+    }));
+    return c.json(clientList);
   }
 );
 

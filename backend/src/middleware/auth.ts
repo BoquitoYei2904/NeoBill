@@ -110,3 +110,14 @@ export const requireAdmin = createMiddleware<ApprovedEnv>(async (c, next) => {
   }
   await next();
 });
+
+export const requireAdminForWrites = createMiddleware<ApprovedEnv>(async (c, next) => {
+  if (c.req.method === "GET") {
+    await next();
+    return;
+  }
+  if (c.get("userRole") !== "admin") {
+    return c.json({ message: "Admin access required for this action." }, 403);
+  }
+  await next();
+});
