@@ -20,12 +20,12 @@ export async function recalcLicitationTotals(tx: PgTransaction<any, any, any>, l
     return;
   }
 
-  const taxIds = [...new Set(items.map((i) => i.taxId))];
-  const discountIds = [...new Set(items.map((i) => i.discountId))];
+  const taxIds = [...new Set(items.map((i) => i.taxId).filter((id): id is number => id !== null))];
+  const discountIds = [...new Set(items.map((i) => i.discountId).filter((id): id is number => id !== null))];
 
   const [taxRows, discountRows] = await Promise.all([
-    tx.select().from(taxes).where(inArray(taxes.id, taxIds)),
-    tx.select().from(discounts).where(inArray(discounts.id, discountIds)),
+    taxIds.length ? tx.select().from(taxes).where(inArray(taxes.id, taxIds)) : Promise.resolve([]),
+    discountIds.length ? tx.select().from(discounts).where(inArray(discounts.id, discountIds)) : Promise.resolve([]),
   ]);
 
   const taxById = new Map(taxRows.map((t) => [t.id, Number(t.percentage)]));
@@ -37,12 +37,12 @@ export async function recalcLicitationTotals(tx: PgTransaction<any, any, any>, l
 
   for (const item of items) {
     const lineBase = Number(item.price) * item.quantity;
-    const discountPct = discountById.get(item.discountId) ?? 0;
-    const taxPct = taxById.get(item.taxId) ?? 0;
+    const discountPct = item.discountId !== null ? discountById.get(item.discountId) ?? 0 : 0;
+    const taxPct = item.taxId !== null ? taxById.get(item.taxId) ?? 0 : 0;
 
-    const lineDiscount = lineBase * (discountPct);
+    const lineDiscount = lineBase * discountPct;
     const lineTaxable = lineBase - lineDiscount;
-    const lineTax = lineTaxable * (taxPct);
+    const lineTax = lineTaxable * taxPct;
 
     base += lineBase;
     discountTotal += lineDiscount;
