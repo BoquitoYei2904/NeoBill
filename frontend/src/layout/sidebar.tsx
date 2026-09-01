@@ -10,6 +10,8 @@ import { NavLink } from 'react-router-dom'
 import { quickAccess } from '../pages/navigation'
 
 export default function Sidebar() {
+
+  
   return (
       <aside className="
         fixed

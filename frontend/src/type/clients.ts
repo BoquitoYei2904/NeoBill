@@ -4,10 +4,10 @@ export type ClientList = {
   name: string;
   email: string | null;
   type: string; //name not id
-  status: string; // 'Activo' or 'Inactivo'
+  status: boolean; // 'Activo' or 'Inactivo'
 };
 
-export type ClientDetail = {
+export type ClientDetail = { //for clientPage
   id: number;
   name: string;
   company: string | null;
@@ -19,10 +19,15 @@ export type ClientDetail = {
   status: string; // 'Activo' or 'Inactivo'
 }
 
-export type NewClient = {
-  name: string;
-  email?: string;
-  phone?: string;
-  company?: string;
-  notes?: string;
-};
+export type ClientSchema = //for inserts into the API
+  {
+    id: number,
+    typeId: number,
+    name: string,
+    identifier: string,
+    company: string,
+    phone: string,
+    email: string,
+    notes: string,
+    status: boolean
+}

@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import type { PgTransaction } from "drizzle-orm/pg-core";
-import { licitations, licitationItems, taxes, discounts } from "../db/schema.js";
+import { licitations, licitationItems, taxes, discounts } from "../../db/schema.js";
 
 /**
   Recalculates and persists a licitation's base/discount/taxes/total columns based on its items.
@@ -40,9 +40,9 @@ export async function recalcLicitationTotals(tx: PgTransaction<any, any, any>, l
     const discountPct = discountById.get(item.discountId) ?? 0;
     const taxPct = taxById.get(item.taxId) ?? 0;
 
-    const lineDiscount = lineBase * (discountPct / 100);
+    const lineDiscount = lineBase * (discountPct);
     const lineTaxable = lineBase - lineDiscount;
-    const lineTax = lineTaxable * (taxPct / 100);
+    const lineTax = lineTaxable * (taxPct);
 
     base += lineBase;
     discountTotal += lineDiscount;

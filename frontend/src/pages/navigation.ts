@@ -3,7 +3,8 @@ import {
   LayoutDashboard,
   Settings,
   Users,
-  ShoppingBag
+  ShoppingBag,
+  DollarSign 
 } from 'lucide-react'
 
 export const quickAccess = [
@@ -34,6 +35,13 @@ export const quickAccess = [
     icon: ShoppingBag,
     title: 'Productos',
     description: 'Consulta y administra tus productos',
+  },
+  {
+    label: 'Pagos',
+    path: '/payments',
+    icon: DollarSign,
+    title: 'Pagos',
+    description: 'Consulta y administra tus Pagos',
   },
   {
     label: 'Configuraciones',

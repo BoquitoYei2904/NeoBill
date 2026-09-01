@@ -1,7 +1,7 @@
 import { useEffect, useState} from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./services/supabaseClient";
-import AuthForm from "./services/AuthForm";
+import AuthForm from "./pages/AuthForm";
 import {
   BrowserRouter,
   Navigate,
@@ -18,6 +18,9 @@ import Products from './pages/products'
 import LicitationDetail from "./pages/licitationsPage";
 import ClientDetail from "./pages/clientPage";
 import ProductDetail from "./pages/productPage";
+import LicitationUpdate from "./pages/licitationsUpdate";
+import Payments from "./pages/payments";
+
 
 export default function AppSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -32,9 +35,11 @@ export default function AppSession() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
     });
+    
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  console.log(session)
   if (sessionLoading) return null;
   if (!session) return <AuthForm />;
 
@@ -61,6 +66,9 @@ function App() {
           <Route 
             path="/products" 
             element={<Products />} />
+          <Route 
+            path="/payments" 
+            element={<Payments />} />
           <Route
             path="*"
             element={<Navigate to="/" replace />}
@@ -78,23 +86,10 @@ function App() {
             path="/Products/:id"
             element={<ProductDetail />}
           />
-          {/* create pages*/}
-          <Route
-            path="/Licitations/create"
-            element={<LicitationDetail />}
-          />
           {/* update pages*/}
           <Route
             path="/Licitations/update/:id"
-            element={<LicitationDetail />}
-          />
-          <Route
-            path="/Clients/update/:id"
-            element={<ClientDetail />}
-          />
-          <Route
-            path="/Products/update/:id"
-            element={<ProductDetail />}
+            element={<LicitationUpdate />}
           />
           
         </Route>

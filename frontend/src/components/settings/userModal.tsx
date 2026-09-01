@@ -2,16 +2,13 @@ import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getConfigApi } from '../../services/configsApi'
 
-//global helpers
-import { FormField, inputClass } from '../globalComponents'
-
-import type { ConfigurationItem, ConfigurationType, TaxOption, DiscountOption, UserConfigInfo } from '../../type/Configurations'
+import type { ConfigurationItem, ConfigurationType, TaxOption, DiscountOption, TypeOption, UserConfigInfo } from '../../type/Configurations'
 
 interface ConfigurationModalProps {
   type: ConfigurationType
   open: boolean
   mode: 'create' | 'edit'
-  item?: ConfigurationItem | TaxOption | DiscountOption | UserConfigInfo
+  item?: ConfigurationItem | TaxOption | DiscountOption | TypeOption | UserConfigInfo
   onClose: () => void
   onSuccess?: () => void // Callback to refresh data after successful save
 }
@@ -26,16 +23,15 @@ export default function ConfigurationModal({
 }: ConfigurationModalProps) {
   const [id, setId] = useState(item?.id ?? '')
   const [name, setName] = useState(item?.name ?? '')
+  const [email, setEmail] = useState(item?.email ?? '')
+  const [roles, setroles] = useState(item?.roles ?? '')
   const [value, setValue] = useState(item?.value ?? '')
   const [status, setStatus] = useState<boolean>(true)
-
-  //userSpecific
-  const [email, setEmail] = useState(item?.email ?? '')
   const [password, setPassword] = useState(item?.password ?? '')
-  const [roles, setRoles] = useState(item?.roles ?? '')
   const [age, setAge] = useState(item?.age ?? '')
   const [address, setAddress] = useState(item?.address ?? '')
   const [phone, setPhone] = useState(item?.phone ?? '')
+  const [state, setState] = useState(item?.state ?? '') 
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,13 +44,9 @@ export default function ConfigurationModal({
     if (!item) {
       setId('')
       setName('')
-      setValue('')
       setEmail('')
-      setPassword('')
-      setRoles('')
-      setAge('')
-      setAddress('')
-      setPhone('')
+      setroles('')
+      setValue('')
       return
     }
     setId(item.id)
@@ -62,18 +54,10 @@ export default function ConfigurationModal({
 
     if (isUserItem(item)) {
       setEmail(item.email)
-      setPassword(item.password)
-      setRoles(item.roles)
-      setAge(item.age)
-      setAddress(item.address)
-      setPhone(item.phone)
+      setroles(item.roles)
     } else {
       setEmail('')
-      setPassword('')
-      setRoles('')
-      setAge('')
-      setAddress('')
-      setPhone('')
+      setroles('')
     }
 
     if (isTaxOptionItem(item)) {
@@ -108,9 +92,10 @@ export default function ConfigurationModal({
       const api = getConfigApi(type)
       
       // Build the payload based on type
-      const payload = buildPayload(type, { id, name, value, status, email, roles, password, age, address, phone })
+      const payload = buildPayload(type, { id, name, email, roles, value, status, password, age, address, phone, state })
       
       if (mode === 'create') {
+        console.log(payload)
         await api.create(payload)
       } else {
         console.log(id, payload)
@@ -132,13 +117,7 @@ export default function ConfigurationModal({
   function isUserItem(
     item: ConfigurationModalProps['item']
   ): item is UserConfigInfo {
-    return !!item && 'email' in item 
-            && 'roles' in item
-            && 'password' in item
-            && 'age' in item
-            && 'address' in item
-            && 'phone' in item
-            && 'state' in item
+    return !!item && 'email' in item && 'roles' in item
   }
 
   function isTaxOptionItem(
@@ -152,7 +131,6 @@ export default function ConfigurationModal({
   ): item is DiscountOption {
     return !!item && 'value' in item
   }
-  const rolesArray = ["admin", "user"];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#071b2f]/40 px-4 backdrop-blur-[2px]">
@@ -202,75 +180,41 @@ export default function ConfigurationModal({
               className={inputClass}
             />
           </FormField>
+          
           {isUser && (
             <>
-            <FormField label="Email">
-              <input
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="Correo"
-                className={inputClass}
-              />
-            </FormField>
+              <FormField label="Correo electrónico">
+                <input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="correo@ejemplo.com"
+                  className={inputClass}
+                />
+              </FormField>
 
-            <FormField label="Contraseña">
-              <input
-                required
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Contraseña"
-                className={inputClass}
-              />
-            </FormField>
+              <FormField label="Rol">
+                <select
+                  required
+                  value={roles}
+                  onChange={(event) => setroles(event.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Seleccionar rol</option>
+                  <option value="Administrador">
+                    Administrador
+                  </option>
+                  <option value="Líder SysOps">
+                    Líder SysOps
+                  </option>
+                  <option value="Operador">
+                    Operador
+                  </option>
+                </select>
+              </FormField>
 
-            <FormField label="Roles">
-              <select
-                value={roles}
-                onChange={(event) => setRoles(event.target.value)}
-                className={inputClass}
-              >
-                <option value="">Seleccionar rol</option>
-                {rolesArray.map((rol) => {
-                  return (
-                    <option value={rol} key={rol}>{rol}</option>
-                  )
-                })}
-                
-              </select>
-            </FormField>
-
-            <FormField label="Edad">
-              <input
-                required
-                type="number"
-                value={age}
-                onChange={(event) => setAge(event.target.value)}
-                placeholder="Edad"
-                className={inputClass}
-              />
-            </FormField>
-
-            <FormField label="Dirección">
-              <input
-                required
-                value={address}
-                onChange={(event) => setAddress(event.target.value)}
-                placeholder="Dirección"
-                className={inputClass}
-              />
-            </FormField>
-
-            <FormField label="Teléfono">
-              <input
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                placeholder="Teléfono"
-                className={inputClass}
-              />
-            </FormField>
-
+              
             </>
           )}
 
@@ -308,9 +252,6 @@ export default function ConfigurationModal({
             </select>
           </FormField>
           )}
-
-
-
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             <button
@@ -352,6 +293,40 @@ export default function ConfigurationModal({
   )
 }
 
+function FormField({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </span>
+
+      {children}
+    </label>
+  )
+}
+
+const inputClass = `
+  h-9
+  w-full
+  rounded-lg
+  border border-slate-200
+  bg-white
+  px-3
+  text-[11px]
+  text-slate-700
+  outline-none
+  transition
+  placeholder:text-slate-400
+  focus:border-[#0bc99b]
+  focus:ring-2
+  focus:ring-[#0bc99b]/10
+`
 
 function getSingularTitle(type: ConfigurationType) {
   switch (type) {
@@ -362,28 +337,24 @@ function getSingularTitle(type: ConfigurationType) {
     case 'discountOptions':
       return 'opción de descuento'
     case 'users':
-      return 'usuarios'
+      return 'usuario'
   }
 }
 
 function buildPayload(
   type: ConfigurationType,
-  data: { id: string; name: string; value: string, status: boolean,
-          email: string; roles: string; password: string; age: string;
-          address: string; phone: string;
-  }
+  data: { id: string; name: string; email: string; 
+          roles: string; value: string, status: boolean,
+          password: string; age: string; address: string;
+          phone: string; state: string;}
 ) {
 
-  const base = { name: data.name }
-  if(type === 'users'){
-    return { ...base, email: data.email, roles: data.roles, password: data.password,
-            address: data.address, age: Number(data.age), phone: data.phone,}
-  }
-   if (type === 'taxTypes' || type === 'discountOptions') {
-    return { ...base, value: Number(data.value) || 0, status: data.status }
-  }
-  if (type === 'clientTypes' || type === 'discountOptions') {
-    return { ...base, status: data.status }
+  const base = { name: data.name, status: data.status }
+ 
+  if (type === 'users') {
+    return { ...base, email: data.email, roles: data.roles }
+  } else if (type === 'taxTypes' || type === 'discountOptions') {
+    return { ...base, value: Number(data.value) || 0 }
   }
  
   return base

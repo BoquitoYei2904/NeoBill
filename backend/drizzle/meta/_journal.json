@@ -29,6 +29,20 @@
       "when": 1787964445340,
       "tag": "0003_cuddly_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788142192700,
+      "tag": "0004_unique_jackpot",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788154105756,
+      "tag": "0005_watery_jackpot",
+      "breakpoints": true
     }
   ]
 }

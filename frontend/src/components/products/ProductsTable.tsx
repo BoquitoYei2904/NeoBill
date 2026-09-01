@@ -1,24 +1,57 @@
-
+import { useState, useEffect } from 'react'
 import { Eye, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import type { ProductList } from '../../type/products'
+import { ProductsApi } from '../../services/productsApi'
+import ProductModal from './ProductsModal'
 
-interface ProductsTableProps {
-  products: ProductList[]
-}
 
-export default function ProductsTable({
-  products,
-}: ProductsTableProps) {
+
+export default function ProductsTable() {
   const navigate = useNavigate()
 
+  const [items, setItems] = useState<ProductList[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [createOpen, setCreateOpen] = useState(false)
+
+  if (!open) return null
+
+  // Fetch data on mount and when type changes
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await ProductsApi().smallList()
+      setItems(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    fetchData()
+  }, [])
+  
+  
+
   const handleNew = () => {
-    navigate('/Products/nueva')
+    setCreateOpen(true)
   }
 
   const handleDetail = (id: number) => {
     navigate(`/Products/${id}`)
+  }
+  const handleSave = async () => {
+    await fetchData()
+  }
+
+  if (loading && items.length === 0) {
+    return <div className="p-4">Cargando...</div>
   }
 
   return (
@@ -72,7 +105,7 @@ export default function ProductsTable({
             </thead>
 
             <tbody>
-              {products.map((product) => (
+              {items.map((product) => (
                 <tr
                   key={product.id}
                   onClick={() => handleDetail(product.id)}
@@ -127,7 +160,7 @@ export default function ProductsTable({
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3">
           <span className="text-[9px] text-slate-400">
-            {products.length} Productos
+            {items.length} Productos
           </span>
 
           <span className="text-[9px] text-slate-400">
@@ -135,6 +168,11 @@ export default function ProductsTable({
           </span>
         </div>
       </section>
+      <ProductModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSuccess={handleSave}
+      />
     </>
   )
 }

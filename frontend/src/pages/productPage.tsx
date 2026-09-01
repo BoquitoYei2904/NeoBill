@@ -1,9 +1,12 @@
-
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Edit } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { ProductDetail as ProductDetailType } from '../type/products'
-import { products } from '../data/product'
+import type { ProductDetail } from '../type/products'
+import { ProductsApi } from '../services/productsApi'
+import { getConfigApi } from '../services/configsApi'
+import ProductModal from '../components/products/ProductsModal'
+
 
 
 
@@ -12,21 +15,72 @@ export default function ProductDetail() {
     const navigate = useNavigate()
     const { id } = useParams()
 
-    const product = products.find(
-        (item) => item.id === Number(id)
-    )
+    const [info, setInfo] = useState<ProductDetail>()
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    //edit modal
+    const [editOpen, setEditOpen] = useState(false)
+
+    // Fetch data on mount and when type changes
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await (await ProductsApi().list()).find((item)=> item.id == id);
+        const taxData = (await getConfigApi('taxTypes').list()).filter((item)=> item.status == true)
+        .find((item) => item.id === data.taxId);
+        const filtered:ProductDetail = {
+          id: data.id,
+          name: data.description,
+          code: data.code,
+          price: data.price,
+          cost: data.cost,
+          notes: data.notes,
+          taxType: taxData.name,
+          tags: data.tags,
+          status: data.status ? "Activo" : "Inactivo",
+        };
+
+        setInfo(filtered)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load data'
+        setError(message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    useEffect(() => {
+      fetchData()
+    }, [])
+
 
     const handleBack = () => {
         navigate('/Products')
     }
 
     const handleEdit = () => {
-        navigate(`/Products/${product.id}/editar`)
+      setEditOpen(true)
+    }
+    const handleSave = async () => {
+      await fetchData()
     }
 
+    if (loading) {
+      return <div className="p-4">Cargando...</div>
+    }
+    if (!info) {
+      return (
+        <div className="rounded-xl border border-slate-200 bg-white p-8">
+          <p className="text-sm text-slate-500">
+            Producto no encontrado.
+          </p>
+        </div>
+      )
+    }
     return (
-        <div className="space-y-2">
-        {/* Header */}
+      <div className="space-y-2">
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">
             <div className="flex items-center justify-between border-b border-slate-100 p-4">
             <div className="flex items-center gap-3">
@@ -47,7 +101,7 @@ export default function ProductDetail() {
 
                 <div>
                 <h1 className="text-sm font-semibold text-[#17233b]">
-                    {product.name}
+                    {info.name}
                 </h1>
 
                 <p className="mt-0.5 text-[9px] text-slate-400">
@@ -87,22 +141,22 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-5 p-5 md:grid-cols-2">
             <DetailField
                 label="Nombre"
-                value={product.name}
+                value={info.name}
             />
 
             <DetailField
                 label="Código"
-                value={product.code}
+                value={info.code}
             />
 
             <DetailField
                 label="Tipo de impuesto"
-                value={product.taxType}
+                value={info.taxType}
             />
 
             <DetailField
                 label="Estado"
-                value={product.status ? 'Activo' : 'Inactivo'}
+                value={info.status ? 'Activo' : 'Inactivo'}
             />
             </div>
         </section>
@@ -117,14 +171,48 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-5 p-5 md:grid-cols-2">
             <CurrencyField
                 label="Precio"
-                value={product.price}
+                value={info.price}
             />
 
             <CurrencyField
                 label="Costo"
-                value={product.cost}
+                value={info.cost}
             />
             </div>
+        </section>
+        {/* Tags */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">
+          <SectionHeader
+            title="Etiquetas"
+            description="Etiquetas asociadas al producto"
+          />
+
+          <div className="p-5">
+            {info.tags?.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {info.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="
+                      inline-flex items-center
+                      rounded-full
+                      bg-slate-100
+                      px-2.5 py-1.5
+                      text-[9px]
+                      font-medium
+                      text-slate-600
+                    "
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] text-slate-400">
+                Sin etiquetas
+              </p>
+            )}
+          </div>
         </section>
 
         {/* Notes */}
@@ -137,7 +225,7 @@ export default function ProductDetail() {
             <div className="p-5">
             <div className="rounded-lg border border-slate-100 bg-slate-50/60 p-4">
                 <p className="whitespace-pre-wrap text-[10px] leading-5 text-slate-600">
-                {product.notes || 'Sin notas'}
+                {info.notes || 'Sin notas'}
                 </p>
             </div>
             </div>
@@ -151,11 +239,19 @@ export default function ProductDetail() {
             />
 
             <div className="p-5">
-            <StatusBadge status={product.status} />
+            <StatusBadge status={info.status} />
             </div>
         </section>
-        </div>
+
+        <ProductModal
+          open={editOpen}
+          id={info.id}
+          onClose={() => setEditOpen(false)}
+          onSuccess={handleSave}
+        />
+      </div>
     )
+    
 }
 
 function SectionHeader({
@@ -225,7 +321,7 @@ function CurrencyField({
 function StatusBadge({
   status,
 }: {
-  status: ProductDetailType['status']
+  status: ProductDetail['status']
 }) {
   return (
     <span
@@ -235,7 +331,7 @@ function StatusBadge({
         px-2.5 py-1.5
         text-[8px] font-semibold
         ${
-          status
+          status === "Activo"
             ? 'bg-emerald-50 text-emerald-600'
             : 'bg-slate-100 text-red-500'
         }
@@ -244,22 +340,13 @@ function StatusBadge({
       <span
         className={`
           h-1.5 w-1.5 rounded-full
-          ${status ? 'bg-emerald-500' : 'bg-red-400'}
+          ${status === "Activo" ? 'bg-emerald-500' : 'bg-red-400'}
         `}
       />
 
-      {status ? 'Activo' : 'Inactivo'}
+      {status}
     </span>
   )
-}
-
-function getTaxTypeLabel(taxType: number) {
-  const types: Record<number, string> = {
-    1: 'ITBMS',
-    2: 'Exento',
-  }
-
-  return types[taxType] ?? `Tipo ${taxType}`
 }
 
 function formatCurrency(value: number) {

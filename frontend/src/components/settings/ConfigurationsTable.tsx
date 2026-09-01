@@ -1,29 +1,74 @@
 import { Pencil, Plus } from 'lucide-react'
-
+import { useState, useEffect } from 'react'
+import ConfigurationModal from '../settings/ConfigurationModal'
+import { getConfigApi } from '../../services/configsApi'
 import type {
+  ConfigurationType,
   ConfigurationItem,
   TaxOption,
-  UserConfiguration,
+  DiscountOption, 
+  UserConfigInfo
 } from '../../type/Configurations'
 
+type ConfigItem =  | TaxOption | DiscountOption | ConfigurationItem | UserConfigInfo
+
 interface ConfigurationTableProps {
-  type: 'users' | 'clientTypes' | 'taxTypes' | 'discountOptions'
-  data: (
-    | ConfigurationItem
-    | UserConfiguration
-    | TaxOption
-  )[]
-  onCreate: () => void
-  onEdit: (item: ConfigurationItem | UserConfiguration | TaxOption) => void
+  type: ConfigurationType
 }
 
+export default function ConfigurationTable({ type }: ConfigurationTableProps) {
 
-export default function ConfigurationTable({
-  type,
-  data,
-  onCreate,
-  onEdit,
-}: ConfigurationTableProps) {
+  
+  const [items, setItems] = useState<ConfigItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+
+  const [selectedItem, setSelectedItem] = useState<ConfigurationItem |  TaxOption | UserConfigInfo>()
+
+  // Fetch data on mount and when type changes
+  useEffect(() => {
+    fetchData()
+  }, [type])
+ 
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const api = getConfigApi(type)
+      const data = await api.list()
+      setItems(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreate = () => {
+    setSelectedItem(undefined)
+    setModalMode('create')
+    setModalOpen(true)
+  }
+  const handleEdit = (item: ConfigItem) => {
+    setSelectedItem(item)
+    setModalMode('edit')
+    setModalOpen(true)
+  }
+
+  const handleModalSuccess = () => {
+    // Refresh the list after successful create/update
+    fetchData()
+  }
+ 
+  if (loading && items.length === 0) {
+    return <div className="p-4">Cargando...</div>
+  }
+
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">
 
@@ -40,7 +85,7 @@ export default function ConfigurationTable({
         </div>
 
         <button
-          onClick={onCreate}
+          onClick={handleCreate}
           className="
             flex items-center gap-1.5
             rounded-lg
@@ -96,10 +141,9 @@ export default function ConfigurationTable({
           </thead>
 
           <tbody>
-            {data.map((item, index) => {
-              const user = item as UserConfiguration
+            {items.map((item, index) => {
+              const user = item as UserConfigInfo
               const taxOption = item as TaxOption
-
               return (
                 <tr
                   key={item.id}
@@ -127,20 +171,26 @@ export default function ConfigurationTable({
                       </td>
 
                       <td className="px-4 py-3.5 text-[10px] text-slate-600">
-                        {user.role}
+                        {user.roles}
                       </td>
                     </>
                   )}
 
                   {type === 'discountOptions' || type === 'taxTypes' ?(
                     <td className="px-4 py-3.5 text-[10px] font-semibold text-slate-700">
-                      {taxOption.value+"%"}
+                      {(taxOption.value*100).toFixed(0)+"%"}
                     </td>
                   ): null}
 
+                  {type === 'users' ? (
                   <td className="px-4 py-3.5">
-                    <StatusBadge status={item.status} />
+                    <StatusBadgeMultiple status={user.status} />
                   </td>
+                  ):(
+                  <td className="px-4 py-3.5">
+                    <StatusBadge status={taxOption.status} />
+                  </td>
+                  )}
 
                   <td className="px-4 py-3.5">
                     <button
@@ -153,7 +203,7 @@ export default function ConfigurationTable({
                         hover:bg-blue-50
                         hover:text-blue-500
                       "
-                      onClick={() => onEdit(item)}
+                      onClick={() => handleEdit(item)}
                     >
                       <Pencil size={13} />
                     </button>
@@ -168,19 +218,30 @@ export default function ConfigurationTable({
       {/* Footer */}
       <div className="px-5 py-3">
         <span className="text-[9px] text-slate-400">
-          {data.length} registros
+          {items.length} registros
         </span>
       </div>
+
+      {/* Modal */}
+      <ConfigurationModal
+        type={type}
+        open={modalOpen}
+        mode={modalMode}
+        item={selectedItem}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
     </section>
+    
+    
   )
 }
 
 function StatusBadge({
   status,
 }: {
-  status?: 'Activo' | 'Inactivo'
+  status?: boolean
 }) {
-  if (!status) return null
 
   return (
     <span
@@ -189,9 +250,36 @@ function StatusBadge({
         px-2 py-1
         text-[8px] font-semibold
         ${
-          status === 'Activo'
+          status === true
             ? 'bg-emerald-50 text-emerald-600'
             : 'bg-slate-100 text-slate-500'
+        }
+      `}
+    >
+      {status === true ? "Activo": "Inactivo"}
+    </span>
+  )
+}
+function StatusBadgeMultiple({
+  status,
+}: {
+  status?: string
+}) {
+
+  return (
+    <span
+      className={`
+        inline-flex rounded-full
+        px-2 py-1
+        text-[8px] font-semibold
+        ${
+          status === "pending"
+            ? 'bg-slate-100 text-slate-500'
+            : status === "approved"
+            ? 'bg-emerald-50 text-emerald-600'
+            : status === "rejected"
+            ? 'bg-emerald-50 text-orange-600' 
+            : 'bg-emerald-50 text-red-600'
         }
       `}
     >

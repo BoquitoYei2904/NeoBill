@@ -1,0 +1,1 @@
+ALTER TABLE "licitation_items" ALTER COLUMN "discount_id" DROP NOT NULL;

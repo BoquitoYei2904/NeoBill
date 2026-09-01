@@ -10,6 +10,7 @@ import { licitationsRoute } from "./routes/licitations.js";
 import { historyRoute } from "./routes/history.js";
 import { authRoute } from "./routes/auth.js";
 import { usersRoute } from "./routes/users.js";
+import { paymentsRoute } from "./routes/payments.js";
 
 const app = new OpenAPIHono();
 
@@ -30,6 +31,7 @@ app.route("/licitations", licitationsRoute);
 app.route("/history", historyRoute);
 app.route("/auth", authRoute);
 app.route("/users", usersRoute);
+app.route("/payments", paymentsRoute);
 
 
 // OpenAPI JSON spec

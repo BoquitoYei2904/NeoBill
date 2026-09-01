@@ -15,7 +15,7 @@ export const CreateTaxSchema = z
   .object({
     name: z.string().min(1).openapi({ example: "IVA" }),
     status: z.boolean().openapi({ example: true }),
-    percentage: z.coerce
+    value: z.coerce
       .number()
       .min(0)
       .max(100)
@@ -40,7 +40,7 @@ export const CreateDiscountSchema = z
   .object({
     name: z.string().min(1).openapi({ example: "Loyalty discount" }),
     status: z.boolean().openapi({ example: true }),
-    percentage: z.coerce
+    value: z.coerce
       .number()
       .min(0)
       .max(100)

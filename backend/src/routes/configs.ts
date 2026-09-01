@@ -63,7 +63,7 @@ configsRoute.openapi(
     const created = await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(taxes)
-        .values({ name: body.name, percentage: String(body.percentage), status: body.status, createdBy: userId })
+        .values({ name: body.name, percentage: String(body.value/100), status: body.status, createdBy: userId })
         .returning();
       await logAudit(tx, {
         tableName: "taxes",
@@ -108,7 +108,7 @@ configsRoute.openapi(
         .update(taxes)
         .set({
           ...(body.name !== undefined && { name: body.name }),
-          ...(body.percentage !== undefined && { percentage: String(body.percentage) }),
+          ...(body.value !== undefined && { percentage: String(body.value) }),
           ...(body.status !== undefined && { status: body.status }),
         })
         .where(eq(taxes.id, id))
@@ -207,7 +207,7 @@ configsRoute.openapi(
     const created = await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(discounts)
-        .values({ name: body.name, percentage: String(body.percentage), status: body.status, createdBy: userId })
+        .values({ name: body.name, percentage: String(body.value/100), status: body.status, createdBy: userId })
         .returning();
       await logAudit(tx, {
         tableName: "discounts",
@@ -253,7 +253,7 @@ configsRoute.openapi(
         .update(discounts)
         .set({
           ...(body.name !== undefined && { name: body.name }),
-          ...(body.percentage !== undefined && { percentage: String(body.percentage) }),
+          ...(body.value !== undefined && { percentage: String(body.value) }),
           ...(body.status !== undefined && { status: body.status }),
         })
         .where(eq(discounts.id, id))

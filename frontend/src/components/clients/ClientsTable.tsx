@@ -1,23 +1,51 @@
 import { Eye, Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import type { ClientList } from '../../type/clients'
+import { ClientsApi } from '../../services/clientsApi'
+import ClientModal from './ClientsModal'
 
-interface ClientsTableProps {
-  clients: ClientList[]
-}
-
-export default function ClientsTable({
-  clients,
-}: ClientsTableProps) {
+export default function ClientsTable() {
   const navigate = useNavigate()
 
+  const [items, setItems] = useState<ClientList[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [createOpen, setCreateOpen] = useState(false)
+
+  // Fetch data on mount and when type changes
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await ClientsApi().smallList()
+      setItems(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    fetchData()
+  }, [])
+  
   const handleNew = () => {
-    navigate('/Clients/nueva')
+    setCreateOpen(true)
   }
 
   const handleDetail = (id: number) => {
     navigate(`/Clients/${id}`)
+  }
+  const handleSave = async () => {
+    await fetchData()
+  }
+
+  if (loading && items.length === 0) {
+    return <div className="p-4">Cargando...</div>
   }
 
   return (
@@ -75,7 +103,7 @@ export default function ClientsTable({
             </thead>
 
             <tbody>
-              {clients.map((client) => (
+              {items.map((client) => (
                 <tr
                   key={client.id}
                   onClick={() => handleDetail(client.id)}
@@ -134,7 +162,7 @@ export default function ClientsTable({
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3">
           <span className="text-[9px] text-slate-400">
-            {clients.length} Clientes
+            {items.length} Clientes
           </span>
 
           <span className="text-[9px] text-slate-400">
@@ -142,6 +170,12 @@ export default function ClientsTable({
           </span>
         </div>
       </section>
+
+      <ClientModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSuccess={handleSave}
+      />
     </>
   )
 }

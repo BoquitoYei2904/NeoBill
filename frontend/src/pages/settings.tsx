@@ -1,18 +1,7 @@
-
-
 import { useState } from 'react'
-
-import ConfigurationModal from '../components/settings/ConfigurationModal'
 import ConfigurationTable from '../components/settings/ConfigurationsTable'
 
-import {
-  clientTypes,
-  discountOptions,
-  taxTypes,
-  users,
-} from '../data/configuration'
-
-import type { ConfigurationItem, ConfigurationType, TaxOption, UserConfiguration } from '../type/Configurations'
+import type {  ConfigurationType } from '../type/Configurations'
 
 const tabs: {
   id: ConfigurationType
@@ -40,31 +29,6 @@ export default function Settings() {
   const [activeTab, setActiveTab] =
     useState<ConfigurationType>('users')
 
-  const [modalOpen, setModalOpen] = useState(false)
-
-  const [modalMode, setModalMode] =
-    useState<'create' | 'edit'>('create')
-
-  const [selectedItem, setSelectedItem] =
-    useState<ConfigurationItem | UserConfiguration | TaxOption>()
-
-  const data = {
-    users,
-    clientTypes,
-    taxTypes,
-    discountOptions,
-  }[activeTab]
-
-  const handleCreate = () => {
-    setSelectedItem(undefined)
-    setModalMode('create')
-    setModalOpen(true)
-  }
-  const handleEdit = (item: ConfigurationItem | UserConfiguration | TaxOption) => {
-    setSelectedItem(item)
-    setModalMode('edit')
-    setModalOpen(true)
-  }
 
   return (
     <>
@@ -113,25 +77,10 @@ export default function Settings() {
         {/* Table */}
         <ConfigurationTable
           type={activeTab}
-          data={data}
-          onCreate={handleCreate}
-          onEdit={handleEdit}
         />
 
       </div>
 
-      {/* Modal */}
-      <ConfigurationModal
-        type={activeTab}
-        open={modalOpen}
-        mode={modalMode}
-        item={selectedItem}
-        onClose={() => setModalOpen(false)}
-        onSubmit={(formData) => {
-          console.log('Form submitted:', formData)
-          setModalOpen(false)
-        }}
-      />
     </>
   )
 }

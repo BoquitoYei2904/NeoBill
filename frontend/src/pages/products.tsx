@@ -1,11 +1,7 @@
 
-import ProductsTable from "../components/products/productsTable";
-import { products } from "../data/product";
-
+import ProductsTable from "../components/products/ProductsTable"
 export default function Products() {
   return (
-    <ProductsTable
-      products={products}
-    />
+    <ProductsTable/>
   )
 }

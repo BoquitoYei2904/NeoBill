@@ -1,173 +1,199 @@
 import { Eye, Plus } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import type { Licitation, LicitationStatus, LicitationStatusDisplay } from '../../type/licitations'
+import { LICITATION_STATUS_DISPLAY } from '../../type/licitations'
+import { LicitationsApi } from '../../services/licitationsApi'
+import { formatCurrency, toDateInputValue } from '../globalComponents'
 
-import type { Licitation } from '../../type/licitations'
+import LicitationModal from './licitationsModal'
 
-interface LicitationsTableProps {
-  Licitations: Licitation[]
-}
-
-export default function LicitationsTable({
-  Licitations,
-}: LicitationsTableProps) {
+export default function LicitationsTable() {
   const navigate = useNavigate()
 
+  const [items, setItems] = useState<Licitation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [createOpen, setCreateOpen] = useState(false)
+
+  // Fetch data on mount and when type changes
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await LicitationsApi().listSummarized()
+      setItems(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
+    fetchData()
+  }, [])
+
   const handleNew = () => {
-    navigate('/Licitations/nueva')
+    setCreateOpen(true)
   }
 
-  const handleDetail = (id: string) => {
+  const handleDetail = (id: number) => {
     navigate(`/Licitations/${id}`)
+  }
+  const handleSave = (id: number) => {
+    navigate(`/Licitations/update/${id}`)
+  }
+  if (loading && items.length === 0) {
+    return <div className="p-4">Cargando...</div>
   }
 
   return (
     <>
     {/* Header */}
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">       
-            <div className="flex items-center justify-between border-b border-slate-100 p-3">
-                <div>
-                </div>
-
-                <button
-                onClick={handleNew}
-                className="
-                    flex items-center gap-1.5
-                    rounded-lg
-                    bg-[#0bc99b]
-                    px-3
-                    py-2
-                    text-[10px]
-                    font-semibold
-                    text-[#071b2f]
-                    transition
-                    hover:bg-[#0ab58c]
-                "
-                >
-                <Plus size={14} />
-                Nueva
-                </button>
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">       
+        <div className="flex items-center justify-between border-b border-slate-100 p-3">
+            <div>
             </div>
-        </section>
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)] my-2">
-        {/* Table */}
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[750px] border-collapse">
-            <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/70">
-                <th className="px-5 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Licitación
-                </th>
 
-                <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Detalle
-                </th>
+            <button
+            onClick={handleNew}
+            className="
+                flex items-center gap-1.5
+                rounded-lg
+                bg-[#0bc99b]
+                px-3
+                py-2
+                text-[10px]
+                font-semibold
+                text-[#071b2f]
+                transition
+                hover:bg-[#0ab58c]
+            "
+            >
+            <Plus size={14} />
+            Nueva
+            </button>
+        </div>
+      </section>
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)] my-2">
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[750px] border-collapse">
+        <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/70">
+            <th className="px-5 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                Licitación
+            </th>
 
-                <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Estado
-                </th>
+            <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                Estado
+            </th>
 
-                <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Fecha
-                </th>
+            <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                Fecha
+            </th>
 
-                <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Fecha límite
-                </th>
+            <th className="px-4 py-3 text-left text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                Fecha límite
+            </th>
 
-                <th className="px-4 py-3 text-right text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                    Presupuesto
-                </th>
+            <th className="px-4 py-3 text-right text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                Presupuesto
+            </th>
+
+            
+
+            <th className="w-12 px-4 py-3" />
+            </tr>
+        </thead>
+
+        <tbody>
+            {items.map((licitacion) => (
+            <tr
+                key={licitacion.id}
+                onClick={() => handleDetail(licitacion.id)}
+                className="
+                cursor-pointer
+                border-b border-slate-100
+                transition
+                hover:bg-slate-50
+                even:bg-slate-50/40
+                ">
+                <td className="px-5 py-3.5">
+                <div>
+                    <p className="text-[11px] font-semibold text-[#17233b]">
+                    {licitacion.cliente}
+                    </p>
+
+                    <p className="mt-0.5 text-[9px] text-slate-400">
+                    {licitacion.codigo}
+                    </p>
+                </div>
+                </td>
+
+                <td className="px-4 py-3.5">
+                <StatusBadge status={licitacion.status} />
+                </td>
+
+                <td className="px-4 py-3.5 text-[10px] text-slate-600">
+                {toDateInputValue(licitacion.fecha)}
+                </td>
+
+                <td className="px-4 py-3.5 text-[10px] text-slate-600">
+                {toDateInputValue(licitacion.fechaLimite)}
+                </td>
+
+                <td className="px-4 py-3.5 text-right text-[10px] font-medium text-slate-700">
+                {formatCurrency(licitacion.presupuesto)}
+                </td>
 
                 
 
-                <th className="w-12 px-4 py-3" />
-                </tr>
-            </thead>
-
-            <tbody>
-                {Licitations.map((licitacion) => (
-                <tr
-                    key={licitacion.id}
-                    onClick={() => handleDetail(licitacion.id)}
+                <td className="px-4 py-3.5">
+                <button
+                    onClick={(event) => {
+                    event.stopPropagation()
+                    handleDetail(licitacion.id)
+                    }}
                     className="
-                    cursor-pointer
-                    border-b border-slate-100
+                    flex h-7 w-7
+                    items-center justify-center
+                    rounded-md
+                    text-slate-400
                     transition
-                    hover:bg-slate-50
-                    even:bg-slate-50/40
-                    ">
-                    <td className="px-5 py-3.5">
-                    <div>
-                        <p className="text-[11px] font-semibold text-[#17233b]">
-                        {licitacion.cliente}
-                        </p>
+                    hover:bg-blue-50
+                    hover:text-blue-500
+                    "
+                    title="Ver detalle"
+                >
+                    <Eye size={14} />
+                </button>
+                </td>
+            </tr>
+            ))}
+        </tbody>
+        </table>
+      </div>
 
-                        <p className="mt-0.5 text-[9px] text-slate-400">
-                        {licitacion.codigo}
-                        </p>
-                    </div>
-                    </td>
+      {/* Footer */}
+      <div className="flex items-center justify-between px-5 py-3">
+          <span className="text-[9px] text-slate-400">
+          {items.length} Licitaciones
+          </span>
 
-                    <td className="px-4 py-3.5 text-[10px] text-slate-600">
-                    {licitacion.descripcion}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                    <StatusBadge status={licitacion.status} />
-                    </td>
-
-                    <td className="px-4 py-3.5 text-[10px] text-slate-600">
-                    {licitacion.fecha}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-[10px] text-slate-600">
-                    {licitacion.fechaLimite}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right text-[10px] font-medium text-slate-700">
-                    {formatCurrency(licitacion.presupuesto)}
-                    </td>
-
-                    
-
-                    <td className="px-4 py-3.5">
-                    <button
-                        onClick={(event) => {
-                        event.stopPropagation()
-                        handleDetail(licitacion.id)
-                        }}
-                        className="
-                        flex h-7 w-7
-                        items-center justify-center
-                        rounded-md
-                        text-slate-400
-                        transition
-                        hover:bg-blue-50
-                        hover:text-blue-500
-                        "
-                        title="Ver detalle"
-                    >
-                        <Eye size={14} />
-                    </button>
-                    </td>
-                </tr>
-                ))}
-            </tbody>
-            </table>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3">
-            <span className="text-[9px] text-slate-400">
-            {Licitations.length} Licitaciones
-            </span>
-
-            <span className="text-[9px] text-slate-400">
-            Mostrando todas
-            </span>
-        </div>
-        </section>
+          <span className="text-[9px] text-slate-400">
+          Mostrando todas
+          </span>
+      </div>
+      </section>
+      <LicitationModal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onSuccess={(id) => handleSave(id)}
+        />
     </>
     
   )
@@ -177,20 +203,20 @@ export default function LicitationsTable({
 function StatusBadge({
   status,
 }: {
-  status: Licitation['status']
+  status: LicitationStatus
 }) {
-  const styles: Record<Licitation['status'], string> = {
-    Borrador:
+  const styles: Record<Licitation["status"], string> = {
+    borrador:
       'bg-slate-100 text-blue-500',
-    Activa:
+    activa:
       'bg-emerald-50 text-emerald-600',
-    Adjudicada:
+    finalizada:
       'bg-blue-50 text-yellow-600',
-    Perdida:
+    perdida:
       'bg-slate-100 text-red-500',
-    'Por cobrar':
+    por_cobrar:
       'bg-amber-100 text-orange-600',
-    Cobrada:
+    cobrada:
       'bg-green-100 text-grey-600',
   }
 
@@ -203,15 +229,7 @@ function StatusBadge({
         ${styles[status]}
       `}
     >
-      {status}
+      {LICITATION_STATUS_DISPLAY[status]}
     </span>
   )
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('es-PA', {
-    style: 'currency',
-    currency: 'PAB', // changed to balboas
-    maximumFractionDigits: 0,
-  }).format(value)
 }

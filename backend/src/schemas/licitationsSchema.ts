@@ -45,9 +45,6 @@ export const UpdateLicitationSchema = z
     date: z.string().datetime().optional(),
     limit_date: z.string().datetime().optional(),
     clientId: z.number().int().positive().optional(),
-    status: z.enum(LICITATION_STATUSES).optional().openapi({ example: "activa" }),
-    document: z.string().optional(),
-    isDocumentGenerated: z.boolean().optional(),
     reference: z.string().optional(),
     notes: z.string().optional(),
   })
@@ -58,10 +55,11 @@ export const LicitationItemSchema = z
     id: z.number().openapi({ example: 1 }),
     licitationId: z.number().openapi({ example: 1 }),
     productId: z.number().openapi({ example: 5 }),
+    description: z.string().openapi({ example: "2" }),
     quantity: z.number().openapi({ example: 2 }),
     price: z.string().openapi({ example: "19.99" }),
     taxId: z.number().openapi({ example: 1 }),
-    discountId: z.number().openapi({ example: 1 }),
+    discountId: z.number().int().nonnegative().nullable().optional(),
     createdAt: z.string().openapi({ example: "2026-08-25T10:00:00.000Z" }),
   })
   .openapi("LicitationItem");
@@ -70,16 +68,20 @@ export const CreateLicitationItemSchema = z
   .object({
     productId: z.number().int().positive().openapi({ example: 5 }),
     quantity: z.number().int().positive().default(1).openapi({ example: 2 }),
+    description: z.string().openapi({ example: "2" }),
+    price: z.string().openapi({ example: "19.99" }),
     taxId: z.number().int().positive().openapi({ example: 1 }),
-    discountId: z.number().int().positive().openapi({ example: 1 }),
+    discountId: z.number().int().nonnegative().nullable().optional(),
   })
   .openapi("CreateLicitationItem");
 
 export const UpdateLicitationItemSchema = z
   .object({
     quantity: z.number().int().positive().optional().openapi({ example: 3 }),
+    description: z.string().openapi({ example: "2" }),
+    price: z.string().openapi({ example: "19.99" }),
     taxId: z.number().int().positive().optional(),
-    discountId: z.number().int().positive().optional(),
+    discountId: z.number().int().nonnegative().nullable().optional(),
   })
   .openapi("UpdateLicitationItem");
 
@@ -91,3 +93,25 @@ export const LicitationItemParamsSchema = z.object({
   id: z.coerce.number().openapi({ param: { name: "id", in: "path" }, example: 1 }),
   itemId: z.coerce.number().openapi({ param: { name: "itemId", in: "path" }, example: 1 }),
 });
+
+
+// Line item for bulk update (can have negative ID for new items)
+export const BulkLineItemSchema = z.object({
+  id: z.number().int(), // Can be negative (new) or positive (existing)
+  productId: z.number().int().positive(),
+  description: z.string().min(1),
+  quantity: z.number().int().positive(),
+  price: z.number().positive(),
+  taxId: z.number().int().positive(),
+  discountId: z.number().int().nonnegative().nullable().optional(),
+});
+ 
+// Bulk update licitation with all line items
+export const UpdateLicitationWithItemsSchema = UpdateLicitationSchema.extend({
+  lineItems: z.array(BulkLineItemSchema).optional(),
+});
+
+export const LicitationStateSchema = z.object({
+  status: z.enum(LICITATION_STATUSES).openapi({ example: "borrador" }),
+})
+

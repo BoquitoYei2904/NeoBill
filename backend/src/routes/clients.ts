@@ -64,7 +64,7 @@ clientsRoute.openapi(
       name: client.name,
       email: client.email,
       type: clientTypesResult.find((item) => item.id === Number(client.typeId))?.name || "Unknown",
-      status: client.status ? "Activo" : "Inactivo",
+      status: client.status,
     }));
     return c.json(clientList);
   }

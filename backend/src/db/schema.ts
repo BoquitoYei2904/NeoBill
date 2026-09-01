@@ -6,7 +6,7 @@ export const authUsers = authSchema.table("users", {
 });
 
 export const roles = pgEnum("roles", ["admin", "user"]);
-export const profileStatus = pgEnum("profile_status", ["pending", "approved", "rejected"]);
+export const profileStatus = pgEnum("profile_status", ["pending", "approved", "rejected", "cancelled"]);
 
 
 // --- Tables ---
@@ -75,13 +75,13 @@ export const licitationItems = pgTable("licitation_items", {
   productId: integer("product_id")
     .notNull()
     .references(() => products.id, { onDelete: "restrict" }),
+  description: text("description").notNull(),
   quantity: integer("quantity").notNull().default(1),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   taxId: integer("tax_id")
     .notNull()
     .references(() => taxes.id, { onDelete: "restrict" }),
   discountId: integer("discount_id")
-    .notNull()
     .references(() => discounts.id, { onDelete: "restrict" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
