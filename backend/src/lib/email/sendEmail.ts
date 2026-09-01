@@ -1,5 +1,5 @@
 import { BrevoClient } from "@getbrevo/brevo";
-import { client, EMAIL_FROM, EMAIL_FROM_NAME } from "./brevoEmail";
+import { client, EMAIL_FROM, EMAIL_FROM_NAME } from "./brevoEmail.js";
 
 type SendEmailParams = {
   to: string | string[];

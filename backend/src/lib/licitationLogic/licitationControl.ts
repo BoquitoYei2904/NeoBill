@@ -1,7 +1,7 @@
 import { licitations, licitationItems, products, clients } from "../../db/schema.js";
 import { eq } from "drizzle-orm";
-import { sendEmail } from "../email/sendEmail";
-import { licitationTemplate } from "../email/emailFormat";
+import { sendEmail } from "../email/sendEmail.js";
+import { licitationTemplate } from "../email/emailFormat.js";
 
 export async function checkLicitationStatus(tx: any, licitationId: number) {
   const [licitation] = await tx

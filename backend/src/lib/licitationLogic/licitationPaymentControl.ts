@@ -1,5 +1,5 @@
 import { eq, and, ne } from "drizzle-orm";
-import { payments, licitations } from "../../db/schema"; // adjust import path
+import { payments, licitations } from "../../db/schema.js"; // adjust import path
 
 export class PaymentAmountExceedsLicitationError extends Error {
   constructor(message: string) {
