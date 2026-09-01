@@ -65,8 +65,8 @@ paymentsRoute.openapi(
       cliente: clientsList.find((c) => c.id === payment.clientId)?.name || "Unknown",
       monto: payment.amount,
       metodo: payment.payment_method,
-      fecha: payment.date,
-      notas: payment.notes,
+      fecha: payment.date.toISOString(),
+      notas: payment.notes?? undefined,
     }));
 
     return c.json(summary);
