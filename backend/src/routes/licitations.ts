@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { eq, and, gt, asc } from "drizzle-orm";
+import { eq, and, gt, asc, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { licitations, licitationItems, products, clients } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
