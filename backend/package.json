@@ -9,7 +9,8 @@
     "start": "node dist/db/migrate.js && node dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "seed:admin": "tsx src/scripts/seedAdmin.ts"
+    "seed:admin": "tsx src/scripts/seedAdmin.ts",
+    "check-expirations": "tsx src/scripts/checkExpiration.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^6.0.3",

@@ -2,6 +2,8 @@ import { licitations, licitationItems, products, clients } from "../../db/schema
 import { eq } from "drizzle-orm";
 import { sendEmail } from "../email/sendEmail.js";
 import { licitationTemplate } from "../email/emailFormat.js";
+import { getDocumentSignedUrl } from "../getDocumentSignedUrl.js";
+import { supabaseStorage } from "../supabaseStorage.js";
 
 export async function checkLicitationStatus(tx: any, licitationId: number) {
   const [licitation] = await tx
@@ -31,7 +33,7 @@ export async function checkLicitationStatus(tx: any, licitationId: number) {
   return licitation;
 }
 
-export async function onDocument(tx: any, licitationId: number) {
+export async function onDocument(tx: any, licitationId: number, documentPath: string) {
   const [licitation] = await tx
     .select()
     .from(licitations)
@@ -52,15 +54,42 @@ export async function onDocument(tx: any, licitationId: number) {
       .from(clients)
       .where(eq(clients.id, licitation.clientId));
 
+    const recordRows = await tx
+      .select()
+      .from(licitationItems)
+      .where(eq(licitationItems.licitationId, licitationId));
+
+    const DEFAULT_DOCUMENT_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+      const { data, error } = await supabaseStorage.storage
+      .from("licitations")
+      .createSignedUrl(documentPath, DEFAULT_DOCUMENT_URL_TTL_SECONDS);
+
+    if (error || !data) {
+      console.error("Supabase Storage signed URL error:", error);
+      throw new Error("Failed to generate document URL");
+    }
+
+    const url = data.signedUrl;
+      
+
     //LOGIC TO SEND EMAIL
     await sendEmail({
       to: clientInfo.email, 
-      subject: `Licitación activada: ${licitation.title}`,
+      subject: `Licitación activada: ${licitation.reference}`,
       html: licitationTemplate({
         recipientName: clientInfo.name,
-        licitationTitle: licitation.title,
-        licitationUrl: `${process.env.APP_URL}/licitations/${licitation.id}`,
-        isUpdate: isUpdate
+        licitationTitle: licitation.reference,
+        licitationUrl: `${url}`,
+        isUpdate: isUpdate,
+        lineItems: recordRows.map((item:any) => ({
+          descripcion: item.description,
+          cantidad: item.quantity,
+          precio: item.price,
+        })),
+        subtotal: licitation.base,
+        descuento: licitation.discount,
+        impuesto: licitation.taxes,
+        total: licitation.total,
       }),
     });
     

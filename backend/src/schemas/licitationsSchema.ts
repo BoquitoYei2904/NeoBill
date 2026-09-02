@@ -106,7 +106,6 @@ export const BulkLineItemSchema = z.object({
   discountId: z.number().int().nonnegative().nullable().optional(),
 });
  
-// Bulk update licitation with all line items
 export const UpdateLicitationWithItemsSchema = UpdateLicitationSchema.extend({
   lineItems: z.array(BulkLineItemSchema).optional(),
 });
@@ -115,3 +114,11 @@ export const LicitationStateSchema = z.object({
   status: z.enum(LICITATION_STATUSES).openapi({ example: "borrador" }),
 })
 
+export const UpcomingExpirationsSchema = z.array(
+  z.object({
+    id: z.number(),
+    clientName: z.string(),
+    amount: z.number(),
+    limitDate: z.string(),
+  })
+);

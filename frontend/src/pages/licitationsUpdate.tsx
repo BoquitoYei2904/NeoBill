@@ -17,10 +17,12 @@ import {
 } from '../components/globalComponents'
 
 import AddProductsModal from '../components/products/AddProductsModal'
+import { useAuth } from '../services/AuthContext'
 
 export default function LicitationUpdate() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { user } = useAuth()
 
   const [record, setRecord] = useState<LicitationItem>()
   const [lineItems, setLineItems] = useState<LineItems[]>([])
@@ -353,13 +355,19 @@ export default function LicitationUpdate() {
                     </div>
 
                     {/* Price */}
-                    <div className="px-3 py-2">
-                      <input
-                        value={item.price}
-                        onChange={(event) => updateLineItem(item.id, 'price', Number(event.target.value))}
-                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-right text-[10px] text-slate-700 outline-none focus:border-[#0bc99b] focus:ring-1 focus:ring-[#0bc99b]/20"
+                    {user?.roles === "admin" ? (
+                      <div className="px-3 py-2">
+                        <input
+                          value={item.price}
+                          onChange={(event) => updateLineItem(item.id, 'price', Number(event.target.value))}
+                          className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-right text-[10px] text-slate-700 outline-none focus:border-[#0bc99b] focus:ring-1 focus:ring-[#0bc99b]/20"
                       />
-                    </div>
+                      </div>
+                    ): (
+                      <div className="px-5 py-4 text-[11px] text-slate-900 truncate">
+                        {formatCurrency(item.price)}
+                      </div>
+                    )}
 
                     {/* Total + remove */}
                     <div className="flex items-center justify-between gap-1 px-3 py-2">

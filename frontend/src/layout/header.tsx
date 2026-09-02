@@ -9,6 +9,7 @@ export default function Header() {
   const currentPage = quickAccess.find(
     (item) => item.path === location.pathname
   )
+  
 
   const title = currentPage?.title ?? 'NeoBill'
 

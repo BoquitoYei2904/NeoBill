@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { eq, inArray  } from "drizzle-orm";
+import { eq, and, gt, asc } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { licitations, licitationItems, products, clients } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -18,11 +18,13 @@ import {
   IdParamSchema,
   LicitationItemParamsSchema,
   LicitationStateSchema,
+  UpcomingExpirationsSchema
 } from "../schemas/licitationsSchema.js";
 import { checkLicitationStatus, onDocument, onStatusShift, InvalidStatusTransitionError } from "../lib/licitationLogic/licitationControl.js";
 import { supabaseStorage } from "../lib/supabaseStorage.js";
 import { File } from "node:buffer";
 import { randomUUID } from "node:crypto";
+import { getDocumentSignedUrl, LicitationNotFoundError, NoDocumentError } from "../lib/getDocumentSignedUrl.js";
 
 
 export const licitationsRoute = new OpenAPIHono<{ Variables: { userId: string } }>();
@@ -92,6 +94,49 @@ licitationsRoute.openapi(
     return c.json(licitationList);
   }
 );
+
+// GET /licitations/upcoming-expirations
+licitationsRoute.openapi(
+  createRoute({
+    method: "get",
+    path: "/upcoming-expirations",
+    tags: ["Licitations"],
+    summary: "Get the 5 licitations closest to their expiration date",
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: "Upcoming expirations, soonest first",
+        content: { "application/json": { schema: UpcomingExpirationsSchema } },
+      },
+    },
+  }),
+  async (c) => {
+    const now = new Date();
+
+    const rows = await db
+      .select({
+        id: licitations.id,
+        clientName: clients.name,
+        total: licitations.total,
+        limitDate: licitations.limit_date,
+      })
+      .from(licitations)
+      .innerJoin(clients, eq(licitations.clientId, clients.id))
+      .where(and(eq(licitations.status, "activa"), gt(licitations.limit_date, now)))
+      .orderBy(asc(licitations.limit_date))
+      .limit(5);
+
+    const result = rows.map((row) => ({
+      id: row.id,
+      clientName: row.clientName,
+      amount: Number(row.total),
+      limitDate: row.limitDate.toISOString(),
+    }));
+
+    return c.json(result, 200);
+  }
+);
+
 
 // GET /licitations/:id + items related to it
 licitationsRoute.openapi(
@@ -762,7 +807,7 @@ licitationsRoute.openapi(
           .returning();
 
         await checkLicitationStatus(tx, id);
-        await onDocument(tx, id);
+        await onDocument(tx, id, data.path);
 
         await logAudit(tx, {
           tableName: "licitations",
@@ -831,32 +876,16 @@ licitationsRoute.openapi(
   async (c) => {
     const { id } = c.req.valid("param");
 
-    const DOCUMENT_URL_TTL_SECONDS = 60 * 60 * 24; // 1 day, fixed server-side
-
-    const [licitation] = await db
-      .select()
-      .from(licitations)
-      .where(eq(licitations.id, id));
-
-    if (!licitation) {
-      return c.json({ message: "Licitation not found" }, 404);
-    }
-
-    if (!licitation.document) {
-      return c.json({ message: "No document uploaded for this licitation" }, 404);
-    }
-
-    const { data, error } = await supabaseStorage.storage
-      .from("licitations")
-      .createSignedUrl(licitation.document, DOCUMENT_URL_TTL_SECONDS);
-
-    if (error || !data) {
-      console.error("Supabase Storage signed URL error:", error);
+    try {
+      const result = await getDocumentSignedUrl(id); // no ttl arg — always default
+      c.header("Cache-Control", "no-store");
+      return c.json(result, 200);
+    } catch (err) {
+      if (err instanceof LicitationNotFoundError) return c.json({ message: err.message }, 404);
+      if (err instanceof NoDocumentError) return c.json({ message: err.message }, 404);
+      console.error("getDocumentSignedUrl error:", err);
       return c.json({ message: "Failed to generate document URL" }, 500);
     }
-    c.header("Cache-Control", "no-store");
-
-    return c.json({ url: data.signedUrl, expiresIn: DOCUMENT_URL_TTL_SECONDS }, 200);
   }
 );
 

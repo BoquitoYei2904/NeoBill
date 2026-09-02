@@ -58,6 +58,7 @@ export const licitations = pgTable("licitations", {
   document: text("document"), //url or path to the document (pdf, docx, etc.)
   isDocumentGenerated: boolean("is_document_generated").notNull().default(false),
   notes: text("notes"),
+  reminderSent: boolean("reminder_sent").notNull().default(false),
   clientId: integer("client_id")
     .notNull()
     .references(() => clients.id, { onDelete: "restrict" }),

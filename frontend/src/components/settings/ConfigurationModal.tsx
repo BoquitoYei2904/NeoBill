@@ -278,7 +278,7 @@ export default function ConfigurationModal({
             <FormField label="Valor">
               <input
                 required
-                value={(value*100).toFixed(0)}
+                value={value}
                 onChange={(event) => setValue(event.target.value)}
                 placeholder="Ej. 7%"
                 className={inputClass}

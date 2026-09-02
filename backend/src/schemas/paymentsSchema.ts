@@ -37,8 +37,8 @@ export const UpdatePaymentSchema = z.object({
 
 export const PaymentListItemSchema = z.object({
   id: z.number().int(),
-  referencia: z.string(), // licitation reference
-  cliente: z.string(), // client name
+  referencia: z.string(), 
+  cliente: z.string(), 
   monto: z.string(),
   metodo: z.string(),
   fecha: z.string().datetime(),

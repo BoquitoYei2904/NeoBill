@@ -1,6 +1,4 @@
-import { useEffect, useState} from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "./services/supabaseClient";
+
 import AuthForm from "./pages/AuthForm";
 import {
   BrowserRouter,
@@ -20,30 +18,30 @@ import ClientDetail from "./pages/clientPage";
 import ProductDetail from "./pages/productPage";
 import LicitationUpdate from "./pages/licitationsUpdate";
 import Payments from "./pages/payments";
+import { useAuth } from './services/AuthContext'
+import { AuthProvider } from './services/AuthContext'
 
 
-export default function AppSession() {
-  const [session, setSession] = useState<Session | null>(null);
-  console.log(session?.access_token);
-  const [sessionLoading, setSessionLoading] = useState(true);
+function SessionContent() {
+  const { session, user, loading } = useAuth();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setSessionLoading(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
-    
-    return () => listener.subscription.unsubscribe();
-  }, []);
+  if (loading) {
+    return null;
+  }
 
-  console.log(session)
-  if (sessionLoading) return null;
-  if (!session) return <AuthForm />;
+  if (!session || !user) {
+    return <AuthForm />;
+  }
 
   return <App />;
+}
+
+export default function AppSession() {
+  return (
+    <AuthProvider>
+      <SessionContent />
+    </AuthProvider>
+  );
 }
 
 function App() {

@@ -43,6 +43,13 @@
       "when": 1788154105756,
       "tag": "0005_watery_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788331375203,
+      "tag": "0006_cloudy_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

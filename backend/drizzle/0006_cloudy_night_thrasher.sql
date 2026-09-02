@@ -1,0 +1,1 @@
+ALTER TABLE "licitations" ADD COLUMN "reminder_sent" boolean DEFAULT false NOT NULL;

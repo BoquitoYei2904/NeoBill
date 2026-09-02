@@ -6,6 +6,7 @@ import type {
   UpdateLicitationPayload,
   CreateLineItemPayload,
   UpdateLineItemPayload,
+  UpcomingExpirations,
 } from "../type/licitations";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -24,11 +25,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   const res = await fetch(`${API_URL}${path}`, {
+    ...options,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      Authorization: `Bearer ${session.access_token}`
+      Authorization: `Bearer ${session.access_token}`,
+      ...(options?.headers ?? {}),
     },
-    ...(options?.headers ?? {}),
   });
 
   if (!res.ok && res.status !== 204) {
@@ -86,6 +88,10 @@ export const LicitationsApi = () => ({
     const data = await request<any[]>("/licitations");
     return data.map(transformLicitationResponse);
   },
+  upcomingExpirations: async () => {
+    const data = await request<UpcomingExpirations[]>("/licitations/upcoming-expirations");
+    return data;
+  },
 
   // Get summarized list
   listSummarized: async () => {
@@ -120,6 +126,7 @@ export const LicitationsApi = () => ({
     id: number,
     payload: UpdateLicitationPayload & { lineItems?: any[] }
   ) => {
+    console.log("updateFull payload", payload)
     const data = await request<any>(`/licitations/${id}/update`, {
       method: "PATCH",
       body: JSON.stringify(payload),
@@ -199,3 +206,10 @@ export const LicitationFilesApi = () => ({
 },
 })
 
+// ============ HISTORY FILES ============
+export const HistoryFilesApi = () => ({
+  list: async (table: string, recordId: number) => {
+    const data = await request<any[]>(`/history/logs?table=${table}&recordId=${recordId}`);
+    return data;
+  },
+})

@@ -44,6 +44,7 @@ export default function LicitationsTable() {
     navigate(`/Licitations/${id}`)
   }
   const handleSave = (id: number) => {
+    console.log("handleSave", id);
     navigate(`/Licitations/update/${id}`)
   }
   if (loading && items.length === 0) {

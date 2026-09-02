@@ -1,4 +1,4 @@
-import { ArrowLeft, SquarePen, FileText, Check, ArrowRight, CircleX} from 'lucide-react'
+import { ArrowLeft, SquarePen, FileText, Check, ArrowRight, CircleX, Info} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -9,17 +9,22 @@ import { ClientsApi } from '../services/clientsApi'
 import { formatCurrency,toDateInputValue } from '../components/globalComponents'
 import UploadModal from '../components/Licitations/uploadModal'
 import ErrorModal from '../components/errorModal'
+import HistoryModal from '../components/historyModal'
+import { getConfigApi } from '../services/configsApi'
 
 export default function LicitationDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
 
   const [record, setRecord] = useState<LicitationItem>()
+  const [taxList, setTaxList] = useState<any>()
+  const [discountList, setDiscountList] = useState<any>()
   const [document, setDocument] = useState<any>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   // document modal
   const [documentOpen, setDocumentOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
 
   if(!id) return null
@@ -32,6 +37,8 @@ export default function LicitationDetail() {
       const data = await LicitationsApi().detail(Number(id), "view");
       const fileUrl = await LicitationFilesApi().getDocumentUrl(String(id))
       const ClientName = (await ClientsApi().smallList()).find((item)=> item.id == data.clientId);
+      const taxResults = await getConfigApi("taxTypes").list();
+      const discountResults = await getConfigApi("discountOptions").list();
       if(fileUrl){
         setDocument(fileUrl)
       } else {
@@ -41,6 +48,8 @@ export default function LicitationDetail() {
         ...data,
         clientName: ClientName.name,
       })
+      setTaxList(taxResults)
+      setDiscountList(discountResults)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load data'
       setError(message)
@@ -92,6 +101,9 @@ export default function LicitationDetail() {
       setError(message);
     }
   }
+  const handleHistory = () => {
+    setHistoryOpen(true)
+  }
  
 
   if (loading) {
@@ -117,14 +129,21 @@ export default function LicitationDetail() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-3 place-content-between">
+      <div className="grid grid-cols-4 place-content-between">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-[10px] font-medium col-span-2 text-slate-400 hover:text-slate-700">
           <ArrowLeft size={14} />
           Volver a licitaciones
         </button>
-        <div className='flex flex-row-reverse gap-2 '>
+        <div className='flex flex-row-reverse gap-2 col-span-2 '>
+          <button
+            onClick={() => handleHistory()}
+            className="flex items-center gap-2 text-[12px] p-1 rounded-md border border-sky-500 font-medium text-sky-500 hover:text-sky-700 hover:bg-sky-200 hover:border-sky-700 transition"
+            >
+            <Info size={13}/>
+            historial
+          </button>
           {record.status == "borrador" || record.status == "activa" ?
           <>
           <button
@@ -251,12 +270,12 @@ export default function LicitationDetail() {
                   {item.description}
                 </div>
                 <div className="px-5 py-4 text-[11px] text-slate-900 truncate">
-                  {item.taxId}
+                  {taxList?.find((tax:any) => tax.id === item.taxId)?.name || "Sin impuesto"}
                 </div>
                 <div className="px-5 py-4 text-[11px] text-slate-900 truncate">
-                  {!item.discountId ? "Sin descuento": item.discountId}
+                  {discountList?.find((discount:any) => discount.id === item.discountId)?.name || "Sin descuento"}
                 </div>
-                <div className="px-5 py-4 text-[11px] text-slate-900 truncate">
+                <div className="px-5 py-4 text-[11px] text-center text-slate-900 truncate">
                   {item.quantity}
                 </div>
                 <div className="px-5 py-4 text-[11px] text-slate-900 truncate">
@@ -335,6 +354,13 @@ export default function LicitationDetail() {
         open={!!error}
         message={error ?? ''}
         onClose={() => setError(null)}
+      />
+      {/* history modal */}
+      <HistoryModal
+        open={historyOpen}
+        table="licitations"
+        recordId={Number(id)}
+        onClose={() => setHistoryOpen(false)}
       />
     </div>
   )

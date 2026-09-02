@@ -34,3 +34,30 @@ export const HistoryQuerySchema = z.object({
       description: "Filter to changes on a single record (requires `table` too)",
     }),
 });
+export const HistoryLogQuerySchema = z.object({
+  table: z
+    .string()
+    .optional()
+    .openapi({
+      param: { name: "table", in: "query" },
+      example: "clients",
+      description: "Filter to changes on a single table",
+    }),
+  recordId: z.coerce
+    .number()
+    .optional()
+    .openapi({
+      param: { name: "recordId", in: "query" },
+      example: 5,
+      description: "Filter to changes on a single record (requires `table` too)",
+    }),
+});
+export const LogSummarySchema = z.array(
+  z.object({
+    id: z.number(),
+    action: z.string(),
+    previous: z.enum(["borrador", "activa", "finalizada", "por_cobrar", "cobrada", "perdida"]).nullable(),
+    modifiedBy: z.string(),
+    modifiedAt: z.string(),
+  })
+);

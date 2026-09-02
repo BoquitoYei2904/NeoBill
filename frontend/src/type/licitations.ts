@@ -1,7 +1,7 @@
 export const LICITATION_STATUSES = [
   "borrador",
   "activa",
-  "finalizada", // <-- confirm: does this map to "Adjudicada"?
+  "finalizada", 
   "por_cobrar",
   "cobrada",
   "perdida",
@@ -143,4 +143,12 @@ export interface UpdateLineItemPayload {
   price?: number
   taxId?: number
   discountId?: number
+}
+
+// up comming
+export type UpcomingExpirations = {
+  id: number
+  clientName: string,
+  amount: number,
+  limitDate: string,
 }
