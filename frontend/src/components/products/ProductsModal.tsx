@@ -15,7 +15,7 @@ interface ProductModalProps {
   open: boolean
   id?: number
   onClose: () => void
-  onSuccess?: () => void // Callback to refresh data after successful save
+  onSuccess?: () => void 
 }
 
 const emptyProduct: ProductSchema = {
@@ -46,28 +46,39 @@ export default function ProductModal({
   // Fetch data on mount and when type changes
   useEffect(() => {
     const fetchData = async () => {
-    setError(null)
-    try {
-      const data = await (await ProductsApi().list()).find((item)=> item.id == id);
-      const taxData = (await getConfigApi('taxTypes').list()).filter((item)=> item.status == true)
-      setTax(taxData)
-      const filtered: ProductSchema = {
-        id: data.id,
-        description: data.description,
-        code: data.code,
-        price: data.price,
-        cost: data.cost,
-        notes: data.notes,
-        taxId: data.taxId,
-        tags: data.tags,
-        status: data.status,
+      setError(null)
+
+      try {
+        const taxData = (await getConfigApi('taxTypes').list()).filter((item) => item.status == true)
+        setTax(taxData)
+        if (id) {
+          // Edit mode — load the existing product
+          const data = await (await ProductsApi().list()).find((item) => item.id == id)
+          if (!data) {
+            setError('Producto no encontrado')
+            return
+          }
+
+          setInfo({
+            id: data.id,
+            description: data.description,
+            code: data.code,
+            price: data.price,
+            cost: data.cost,
+            notes: data.notes,
+            taxId: data.taxId,
+            tags: data.tags,
+            status: data.status,
+          })
+        } else {
+          // Create mode — reset to a blank product
+          setInfo(emptyProduct)
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load data'
+        setError(message)
       }
-      setInfo(filtered)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load data'
-      setError(message)
     }
-  }
     fetchData()
   }, [open, id])
   
