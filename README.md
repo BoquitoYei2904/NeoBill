@@ -2,15 +2,15 @@
 
 Sistema de gestión de licitaciones — control de clientes, productos, pagos y documentos, con notificaciones automáticas por correo.
 
-!\[Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat\&logo=supabase\&logoColor=white)
-!\[PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat\&logo=postgresql\&logoColor=white)
-!\[Hono](https://img.shields.io/badge/Hono-E36002?style=flat\&logo=hono\&logoColor=white)
-!\[React](https://img.shields.io/badge/React-61DAFB?style=flat\&logo=react\&logoColor=black)
-!\[Vite](https://img.shields.io/badge/Vite-646CFF?style=flat\&logo=vite\&logoColor=white)
-!\[TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat\&logo=tailwindcss\&logoColor=white)
-!\[Render](https://img.shields.io/badge/Render-46E3B7?style=flat\&logo=render\&logoColor=white)
-!\[Vercel](https://img.shields.io/badge/Vercel-000000?style=flat\&logo=vercel\&logoColor=white)
-!\[Brevo](https://img.shields.io/badge/Brevo-0B996E?style=flat\&logo=sendinblue\&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat\&logo=supabase\&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat\&logo=postgresql\&logoColor=white)
+![Hono](https://img.shields.io/badge/Hono-E36002?style=flat\&logo=hono\&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat\&logo=react\&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat\&logo=vite\&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat\&logo=tailwindcss\&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=flat\&logo=render\&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat\&logo=vercel\&logoColor=white)
+![Brevo](https://img.shields.io/badge/Brevo-0B996E?style=flat\&logo=sendinblue\&logoColor=white)
 
 ## Stack
 
