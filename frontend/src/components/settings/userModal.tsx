@@ -100,10 +100,8 @@ export default function ConfigurationModal({
       const payload = buildPayload(type, { id, name, email, roles, value, status, password, age, address, phone, state })
       
       if (mode === 'create') {
-        console.log(payload)
         await api.create(payload as any)
       } else {
-        console.log(id, payload)
         await api.update(id, payload as any)
       }
  

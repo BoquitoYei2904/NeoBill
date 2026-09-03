@@ -140,6 +140,7 @@ export default function Sidebar() {
               ) : (
                 documents.map((item) => (
                   <Alert
+                    key={item.id}  
                     id={item.id}
                     icon={<Activity size={14} />}
                     title={item.clientName}
@@ -173,7 +174,7 @@ function Alert({
 }: AlertProps) {
   return (
     <NavLink 
-      key={`Licitations/${id}`}
+      key={id}
       to={`Licitations/${id}`}
       className="block rounded-lg bg-[#102640] px-3 py-2.5 no-underline">
       <div className="flex items-start gap-2.5">

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import {Activity} from 'lucide-react'
 import { supabase } from "../services/supabaseClient";
 
 export default function AuthForm() {
@@ -26,19 +27,8 @@ export default function AuthForm() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#16212F] text-[#2DD4B0]">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M2 14 L7 14 L9 8 L13 18 L15 11 L17 14 L22 14" />
-            </svg>
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#0bc99b] text-[#071b2f]">
+            <Activity size={24} strokeWidth={2.5} />
           </div>
           <span className="text-xl font-semibold text-[#E7ECF3]">NeoBill</span>
         </div>

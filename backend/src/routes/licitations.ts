@@ -702,8 +702,6 @@ licitationsRoute.openapi(
     try {
       const result = await withDbErrorHandling(c, () =>
         db.transaction(async (tx) => {
-          
-          await checkLicitationStatus(tx, id);
 
           const [before] = await tx.select().from(licitations).where(eq(licitations.id, id));
           if (!before) return null;

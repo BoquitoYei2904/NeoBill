@@ -95,9 +95,7 @@ export default function LicitationModal({
         notes: info.notes,
         document: ""
       }
-      console.log("packaged", packaged)
       const result = await api.create(packaged)
-      console.log("result", result)
       if (result && result.id) {
         onSuccess?.(result.id)
         onClose()

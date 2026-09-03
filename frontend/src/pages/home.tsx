@@ -25,7 +25,6 @@ export default function Home() {
       const activeData = LicitationData.filter((item) => item.status === "borrador" || item.status === "activa" || item.status === "finalizada" )
       const readyData = LicitationData.filter((item) => item.status === "por_cobrar" )
       const PaymentData = await PaymentsApi().listSummary()
-      console.log("LicitationData", activeData,readyData,PaymentData)
       setLicitations(activeData.reduce((sum, item) => sum + Number(item.presupuesto), 0))
       setActive(readyData.reduce((sum, item) => sum + Number(item.total), 0))
       setPayment(PaymentData.reduce((sum, item) => sum + Number(item.monto), 0))

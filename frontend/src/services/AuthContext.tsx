@@ -56,7 +56,6 @@ export function AuthProvider({
         data: { session },
       } = await supabase.auth.getSession()
       setSession(session)
-      console.log('Current session:', session?.access_token)
       await loadUser(session)
       setLoading(false)
     }

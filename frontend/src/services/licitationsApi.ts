@@ -126,7 +126,6 @@ export const LicitationsApi = () => ({
     id: number,
     payload: UpdateLicitationPayload & { lineItems?: any[] }
   ) => {
-    console.log("updateFull payload", payload)
     const data = await request<any>(`/licitations/${id}/update`, {
       method: "PATCH",
       body: JSON.stringify(payload),
