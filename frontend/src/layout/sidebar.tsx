@@ -1,6 +1,5 @@
 import {
   Activity,
-  BarChart3,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { quickAccess } from '../pages/navigation'
@@ -14,7 +13,9 @@ export default function Sidebar() {
 
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<UpcomingExpirations[]>()
+
 
   const fetchData = async () => {
       setLoading(true)
@@ -28,7 +29,7 @@ export default function Sidebar() {
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load data'
-        //setError(message)
+        setError(message)
       } finally {
         setLoading(false)
       }
@@ -37,6 +38,16 @@ export default function Sidebar() {
     useEffect(() => {
       fetchData()
     }, [])
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
+  }
   
   return (
       <aside className="fixed inset-y-0 left-0 z-50 flex h-screen w-[228px] flex-col overflow-hidden bg-[#081a30]
@@ -122,7 +133,7 @@ export default function Sidebar() {
         </p>
         <div className="sidebar-scrollbar min-h-0 flex-1 overflow-y-auto">
             <div className="space-y-2">
-              {!documents || documents.length === 0 ? (
+              {!documents || documents.length === 0 || loading? (
                 <p className="text-xs text-slate-500 px-2 py-4 text-center">
                   No hay licitaciones próximas a vencer.
                 </p>

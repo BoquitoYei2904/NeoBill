@@ -2,7 +2,7 @@ import { Eye, Plus } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { Licitation, LicitationStatus, LicitationStatusDisplay } from '../../type/licitations'
+import type { Licitation, LicitationStatus } from '../../type/licitations'
 import { LICITATION_STATUS_DISPLAY } from '../../type/licitations'
 import { LicitationsApi } from '../../services/licitationsApi'
 import { formatCurrency, toDateInputValue } from '../globalComponents'
@@ -49,6 +49,15 @@ export default function LicitationsTable() {
   }
   if (loading && items.length === 0) {
     return <div className="p-4">Cargando...</div>
+  }
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
   }
 
   return (

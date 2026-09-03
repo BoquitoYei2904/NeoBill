@@ -2,7 +2,7 @@ import { ArrowLeft, Trash2, SaveCheck } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import type { LicitationItem, LicitationLineSchema, LineItems } from '../type/licitations'
+import type { LicitationItem, LineItems } from '../type/licitations'
 import type { ProductSchema } from '../type/products'
 
 import { LicitationsApi } from '../services/licitationsApi'

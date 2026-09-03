@@ -79,6 +79,15 @@ export default function ProductDetail() {
         </div>
       )
     }
+    if (error) {
+      return (
+        <div className="rounded-xl border border-red-100 bg-white p-8">
+          <p className="text-sm text-red-500">
+            {error}
+          </p>
+        </div>
+      )
+    }
     return (
       <div className="space-y-2">
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_12px_rgba(20,40,60,0.05)]">

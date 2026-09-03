@@ -26,16 +26,17 @@ export default function ConfigurationModal({
 }: ConfigurationModalProps) {
   const [id, setId] = useState(item?.id ?? '')
   const [name, setName] = useState(item?.name ?? '')
-  const [value, setValue] = useState(item?.value ?? '')
+  const [value, setValue] = useState('')
   const [status, setStatus] = useState<boolean>(true)
 
+
   //userSpecific
-  const [email, setEmail] = useState(item?.email ?? '')
-  const [password, setPassword] = useState(item?.password ?? '')
-  const [roles, setRoles] = useState(item?.roles ?? '')
-  const [age, setAge] = useState(item?.age ?? '')
-  const [address, setAddress] = useState(item?.address ?? '')
-  const [phone, setPhone] = useState(item?.phone ?? '')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [roles, setRoles] = useState('')
+  const [age, setAge] = useState('')
+  const [address, setAddress] = useState('')
+  const [phone, setPhone] = useState('')
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,7 +65,7 @@ export default function ConfigurationModal({
       setEmail(item.email)
       setPassword(item.password)
       setRoles(item.roles)
-      setAge(item.age)
+      setAge(String(item.age))
       setAddress(item.address)
       setPhone(item.phone)
     } else {
@@ -77,13 +78,13 @@ export default function ConfigurationModal({
     }
 
     if (isTaxOptionItem(item)) {
-      setValue(item.value)
+      setValue(String(item.value))
     } else {
       setValue('')
     }
 
     if (isDiscountOptionItem(item)) {
-      setValue(item.value)
+      setValue(String(item.value))
     } else {
       setValue('')
     }
@@ -111,10 +112,10 @@ export default function ConfigurationModal({
       const payload = buildPayload(type, { id, name, value, status, email, roles, password, age, address, phone })
       
       if (mode === 'create') {
-        await api.create(payload)
+        await api.create(payload as any)
       } else {
         console.log(id, payload)
-        await api.update(id, payload)
+        await api.update(id, payload as any)
       }
  
       // Success!
@@ -153,6 +154,20 @@ export default function ConfigurationModal({
     return !!item && 'value' in item
   }
   const rolesArray = ["admin", "user"];
+
+  if (loading) {
+    return <div className="p-4">Cargando...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#071b2f]/40 px-4 backdrop-blur-[2px]">
@@ -368,23 +383,29 @@ function getSingularTitle(type: ConfigurationType) {
 
 function buildPayload(
   type: ConfigurationType,
-  data: { id: string; name: string; value: string, status: boolean,
-          email: string; roles: string; password: string; age: string;
-          address: string; phone: string;
+  data: {
+    id: string; name: string; value: string; status: boolean;
+    email: string; roles: string; password: string; age: string;
+    address: string; phone: string;
   }
 ) {
-
   const base = { name: data.name }
-  if(type === 'users'){
-    return { ...base, email: data.email, roles: data.roles, password: data.password,
-            address: data.address, age: Number(data.age), phone: data.phone,}
+
+  switch (type) {
+    case 'users':
+      return {
+        ...base,
+        email: data.email,
+        roles: data.roles,
+        password: data.password,
+        address: data.address,
+        age: Number(data.age),
+        phone: data.phone,
+      }
+    case 'taxTypes':
+    case 'discountOptions':
+      return { ...base, value: Number(data.value) || 0, status: data.status }
+    case 'clientTypes':
+      return { ...base, status: data.status }
   }
-   if (type === 'taxTypes' || type === 'discountOptions') {
-    return { ...base, value: Number(data.value) || 0, status: data.status }
-  }
-  if (type === 'clientTypes' || type === 'discountOptions') {
-    return { ...base, status: data.status }
-  }
- 
-  return base
 }

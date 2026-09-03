@@ -2,13 +2,13 @@ import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getConfigApi } from '../../services/configsApi'
 
-import type { ConfigurationItem, ConfigurationType, TaxOption, DiscountOption, TypeOption, UserConfigInfo } from '../../type/Configurations'
+import type { ConfigurationItem, ConfigurationType, TaxOption, DiscountOption, UserConfigInfo } from '../../type/Configurations'
 
 interface ConfigurationModalProps {
   type: ConfigurationType
   open: boolean
   mode: 'create' | 'edit'
-  item?: ConfigurationItem | TaxOption | DiscountOption | TypeOption | UserConfigInfo
+  item?: ConfigurationItem | TaxOption | DiscountOption |  UserConfigInfo
   onClose: () => void
   onSuccess?: () => void // Callback to refresh data after successful save
 }
@@ -23,15 +23,15 @@ export default function ConfigurationModal({
 }: ConfigurationModalProps) {
   const [id, setId] = useState(item?.id ?? '')
   const [name, setName] = useState(item?.name ?? '')
-  const [email, setEmail] = useState(item?.email ?? '')
-  const [roles, setroles] = useState(item?.roles ?? '')
-  const [value, setValue] = useState(item?.value ?? '')
+  const [email, setEmail] = useState('')
+  const [roles, setroles] = useState('')
+  const [value, setValue] = useState('')
   const [status, setStatus] = useState<boolean>(true)
-  const [password, setPassword] = useState(item?.password ?? '')
-  const [age, setAge] = useState(item?.age ?? '')
-  const [address, setAddress] = useState(item?.address ?? '')
-  const [phone, setPhone] = useState(item?.phone ?? '')
-  const [state, setState] = useState(item?.state ?? '') 
+  const [password, setPassword] = useState('')
+  const [age, setAge] = useState('')
+  const [address, setAddress] = useState('')
+  const [phone, setPhone] = useState('')
+  const [state, setState] = useState('') 
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +47,11 @@ export default function ConfigurationModal({
       setEmail('')
       setroles('')
       setValue('')
+      setPassword('')
+      setAge('')
+      setAddress('')
+      setPhone('')
+      setState('')
       return
     }
     setId(item.id)
@@ -61,13 +66,13 @@ export default function ConfigurationModal({
     }
 
     if (isTaxOptionItem(item)) {
-      setValue(item.value)
+      setValue(String(item.value))
     } else {
       setValue('')
     }
 
     if (isDiscountOptionItem(item)) {
-      setValue(item.value)
+      setValue(String(item.value))
     } else {
       setValue('')
     }
@@ -96,10 +101,10 @@ export default function ConfigurationModal({
       
       if (mode === 'create') {
         console.log(payload)
-        await api.create(payload)
+        await api.create(payload as any)
       } else {
         console.log(id, payload)
-        await api.update(id, payload)
+        await api.update(id, payload as any)
       }
  
       // Success!
@@ -130,6 +135,20 @@ export default function ConfigurationModal({
     item: ConfigurationModalProps['item']
   ): item is DiscountOption {
     return !!item && 'value' in item
+  }
+
+  if (loading) {
+    return <div className="p-4">Cargando...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -222,7 +241,7 @@ export default function ConfigurationModal({
             <FormField label="Valor">
               <input
                 required
-                value={(value*100).toFixed(0)}
+                value={(Number(value) * 100).toFixed(0)}
                 onChange={(event) => setValue(event.target.value)}
                 placeholder="Ej. 7%"
                 className={inputClass}

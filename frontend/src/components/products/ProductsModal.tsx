@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { ProductDetail, ProductSchema } from '../../type/products'
+import type { ProductSchema } from '../../type/products'
 import { ProductsApi } from '../../services/productsApi'
 import { getConfigApi } from '../../services/configsApi'
 
@@ -152,6 +152,17 @@ export default function ProductModal({
       </div>
     )
   }
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
+  }
+
+  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4">
       <div className="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-xl">

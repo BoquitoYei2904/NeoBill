@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Eye, Plus, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 
 import type { ProductSchema } from '../../type/products'
 import { ProductsApi } from '../../services/productsApi'
@@ -53,6 +53,15 @@ export default function AddProductsModal({
     if (loading && items.length === 0) {
         return <div className="p-4">Cargando...</div>
     }
+    if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
+  }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4">

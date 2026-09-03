@@ -47,6 +47,15 @@ export default function ClientsTable() {
   if (loading && items.length === 0) {
     return <div className="p-4">Cargando...</div>
   }
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-100 bg-white p-8">
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <>
